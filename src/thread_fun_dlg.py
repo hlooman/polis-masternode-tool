@@ -16,7 +16,7 @@ from ui import ui_thread_fun_dlg
 
 class ThreadFunDlg(QtWidgets.QDialog, ui_thread_fun_dlg.Ui_ThreadFunDlg):
     """
-    Some of the DMT's features require quite a long time to complete. Performing this in a main thread
+    Some of the PMT's features require quite a long time to complete. Performing this in a main thread
     causes the app to behave as if it hung. In such situations it is better to display a dialog with
     some information about the progress of the task.
     This class is such a dialog window - it takes a reference to function/method performing a long-running task. 

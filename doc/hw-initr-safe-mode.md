@@ -34,8 +34,8 @@ The number of the word to be entered next by the user will be presented on the h
 ![Recover word Trezor](img/hwri/trezor-recover-word.jpg)
 ![Recover word KeepKey](img/hwri/keepkey-recover-word.jpg)
 
-While the device indicates the word number to be entered, DMT will present a dialog to enter the word:  
-![Input word DMT](img/hwri/rec-word-input.png)
+While the device indicates the word number to be entered, PMT will present a dialog to enter the word:  
+![Input word PMT](img/hwri/rec-word-input.png)
 
 You will continue to see requests for individual words until all words of the recovery seed have been entered. The last word acts as a checksum – a mechanism that verifies whether both the words and their order are correct. The following message appears in the case of an error:  
 ![Checksum error](img/hwri/rec-checksum-error.png)

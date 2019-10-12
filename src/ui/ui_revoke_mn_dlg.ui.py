@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/Projects/dash-masternode-tool/src/ui/ui_revoke_mn_dlg.ui.autosave'
+# Form implementation generated from reading ui file '/Users/blogin/Projects/polis-masternode-tool/src/ui/ui_revoke_mn_dlg.ui.autosave'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -120,7 +120,7 @@ class Ui_RevokeMnDlg(object):
     def retranslateUi(self, RevokeMnDlg):
         _translate = QtCore.QCoreApplication.translate
         RevokeMnDlg.setWindowTitle(_translate("RevokeMnDlg", "Update masternode registrar"))
-        self.lblDescription.setText(_translate("RevokeMnDlg", "This transaction is used by the operator to terminate service or signal the owner that a new BLS key is required (<a href=\"https://docs.dash.org/en/stable/masternodes/maintenance.html#prouprevtx\">details</a>)."))
+        self.lblDescription.setText(_translate("RevokeMnDlg", "This transaction is used by the operator to terminate service or signal the owner that a new BLS key is required (<a href=\"https://docs.polis.org/en/stable/masternodes/maintenance.html#prouprevtx\">details</a>)."))
         self.cboReason.setItemText(0, _translate("RevokeMnDlg", "0: Not Specified"))
         self.cboReason.setItemText(1, _translate("RevokeMnDlg", "1: Termination of Service"))
         self.cboReason.setItemText(2, _translate("RevokeMnDlg", "2: Compromised Keys"))

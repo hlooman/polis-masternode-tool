@@ -15,7 +15,7 @@ import app_utils
 import wnd_utils as wnd_utils
 from app_config import MasternodeConfig, AppConfig
 from bip44_wallet import UNCONFIRMED_TX_BLOCK_HEIGHT
-from dashd_intf import DashdIndexException
+from polisd_intf import PolisdIndexException
 from ext_item_model import ExtSortFilterTableModel, TableModelColumn
 from ui import ui_find_coll_tx_dlg
 from wallet_common import UtxoType
@@ -214,7 +214,7 @@ class ListCollateralTxsDlg(QDialog, ui_find_coll_tx_dlg.Ui_ListCollateralTxsDlg,
     def display_title(self):
         if len(self.utxos):
             if self.read_only:
-                msg = f'<span>Found 1000 Dash transaction(s):</span>'
+                msg = f'<span>Found 1000 Polis transaction(s):</span>'
             else:
                 msg = f'<span><b>Select the appropriate UTXO then press the &lt;Apply&gt; button or ' \
                     f'double click on the corresponding row.</b></span>'
@@ -222,7 +222,7 @@ class ListCollateralTxsDlg(QDialog, ui_find_coll_tx_dlg.Ui_ListCollateralTxsDlg,
             self.lblMessage.setText(msg)
             self.lblMessage.setVisible(True)
         else:
-            self.lblMessage.setText('<span style="color:red"><b>Found no unspent 1000 Dash transactions in your '
+            self.lblMessage.setText('<span style="color:red"><b>Found no unspent 1000 Polis transactions in your '
                                     'wallet</b></span>')
             self.lblMessage.setVisible(True)
 

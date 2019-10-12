@@ -11,7 +11,7 @@ import wnd_utils as wnd_utils
 import hw_intf
 from app_defs import HWType
 from common import CancelException
-from dash_utils import ecdsa_sign
+from polis_utils import ecdsa_sign
 from ui import ui_sign_message_dlg
 import logging
 
@@ -59,7 +59,7 @@ class SignMessageDlg(QDialog, ui_sign_message_dlg.Ui_SignMessageDlg, wnd_utils.W
                         self.warnMsg('Message signed but signing address (%s) for BIP32 path (%s) differs from '
                                      'required one: %s\n\nDid you enter correct passphrase?' % (sig.address, self.bip32path, self.address))
                 elif self.private_key:
-                    sig = ecdsa_sign(msg_to_sign, self.private_key, self.app_config.dash_network)
+                    sig = ecdsa_sign(msg_to_sign, self.private_key, self.app_config.polis_network)
                     self.edtSignedMessage.setPlainText(sig)
                 else:
                     raise Exception('Invalid arguments')

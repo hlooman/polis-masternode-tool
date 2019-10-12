@@ -10,7 +10,7 @@ from typing import Optional, List, Callable, Tuple, Dict, ByteString, Union
 
 import base58
 from common import AttrsProtected
-from dash_utils import bip32_path_string_to_n, bip32_path_n_to_string, pubkey_to_address
+from polis_utils import bip32_path_string_to_n, bip32_path_n_to_string, pubkey_to_address
 
 
 def xpub_to_hash(xpub: str):
@@ -208,10 +208,10 @@ class Bip44Entry(object):
             self.child_entries[index] = child
         return child
 
-    def evaluate_address_if_null(self, db_cursor, dash_network: str):
+    def evaluate_address_if_null(self, db_cursor, polis_network: str):
         if not self.address and self.xpub:
             key = self.get_bip32key()
-            self.address = pubkey_to_address(key.PublicKey().hex(), dash_network)
+            self.address = pubkey_to_address(key.PublicKey().hex(), polis_network)
             if self.id:
                 db_cursor.execute('update address set address=? where id=?', (self.address, self.id))
 

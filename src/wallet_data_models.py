@@ -21,7 +21,7 @@ from bip44_wallet import Bip44Wallet, UNCONFIRMED_TX_BLOCK_HEIGHT
 from ext_item_model import TableModelColumn, ExtSortFilterTableModel
 from wallet_common import Bip44AccountType, Bip44AddressType, UtxoType, TxType
 
-log = logging.getLogger('dmt.wallet_dlg')
+log = logging.getLogger('pmt.wallet_dlg')
 
 FILTER_OR = 0
 FILTER_AND = 1
@@ -380,7 +380,7 @@ class AccountListModel(ExtSortFilterTableModel):
 class UtxoTableModel(ExtSortFilterTableModel):
     def __init__(self, parent, masternode_list: List[MasternodeConfig], tx_explorer_url: str):
         ExtSortFilterTableModel.__init__(self, parent, [
-            TableModelColumn('satoshis', 'Amount (Dash)', True, 100),
+            TableModelColumn('satoshis', 'Amount (Polis)', True, 100),
             TableModelColumn('confirmations', 'Confirmations', True, 100),
             TableModelColumn('bip32_path', 'Path', True, 100),
             TableModelColumn('time_str', 'TX Date/Time', True, 140),

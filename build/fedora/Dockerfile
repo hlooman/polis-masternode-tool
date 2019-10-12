@@ -7,25 +7,25 @@ RUN yum update -y \
  && yum remove -y gmp-devel \
  && pip3 install virtualenv \
  && cd ~ \
- && mkdir dmt \
- && cd dmt \
+ && mkdir pmt \
+ && cd pmt \
  && virtualenv -p python3 venv \
  && . venv/bin/activate \
  && pip install --upgrade setuptools \
- && git clone https://github.com/Bertrand256/dash-masternode-tool \
- && cd dash-masternode-tool/ \
+ && git clone https://github.com/Bertrand256/polis-masternode-tool \
+ && cd polis-masternode-tool/ \
  && pip install -r requirements.txt \
- && cd ~/dmt \
+ && cd ~/pmt \
  && set +H \
- && echo "#!/bin/sh" | tee build-dmt.sh \
- && echo "cd ~/dmt" | tee -a build-dmt.sh \
- && echo ". venv/bin/activate" | tee -a build-dmt.sh \
- && echo "cd dash-masternode-tool" | tee -a build-dmt.sh \
- && echo "git fetch --all" | tee -a build-dmt.sh \
- && echo "git reset --hard origin/master" | tee -a build-dmt.sh \
- && echo "pip install -r requirements.txt" | tee -a build-dmt.sh \
- && echo "pyinstaller --distpath=../dist/linux --workpath=../dist/linux/build dash_masternode_tool.spec" | tee -a build-dmt.sh \
- && echo "cd .." | tee -a build-dmt.sh \
- && chmod +x build-dmt.sh
+ && echo "#!/bin/sh" | tee build-pmt.sh \
+ && echo "cd ~/pmt" | tee -a build-pmt.sh \
+ && echo ". venv/bin/activate" | tee -a build-pmt.sh \
+ && echo "cd polis-masternode-tool" | tee -a build-pmt.sh \
+ && echo "git fetch --all" | tee -a build-pmt.sh \
+ && echo "git reset --hard origin/master" | tee -a build-pmt.sh \
+ && echo "pip install -r requirements.txt" | tee -a build-pmt.sh \
+ && echo "pyinstaller --distpath=../dist/linux --workpath=../dist/linux/build polis_masternode_tool.spec" | tee -a build-pmt.sh \
+ && echo "cd .." | tee -a build-pmt.sh \
+ && chmod +x build-pmt.sh
 
-CMD ~/dmt/build-dmt.sh
+CMD ~/pmt/build-pmt.sh

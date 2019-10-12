@@ -9,9 +9,9 @@ from bitcoinrpc.authproxy import JSONRPCException
 import app_cache
 from app_config import MasternodeConfig, AppConfig, InputKeyType
 from app_defs import FEE_DUFF_PER_BYTE
-from dash_utils import wif_privkey_to_address, generate_wif_privkey, generate_bls_privkey, validate_address, \
+from polis_utils import wif_privkey_to_address, generate_wif_privkey, generate_bls_privkey, validate_address, \
     bls_privkey_to_pubkey, validate_wif_privkey
-from dashd_intf import DashdInterface
+from polisd_intf import PolisdInterface
 from ui import ui_upd_mn_service_dlg
 from wnd_utils import WndUtils, ProxyStyleNoFocusRect
 
@@ -23,7 +23,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
     def __init__(self,
                  main_dlg,
                  app_config: AppConfig,
-                 dashd_intf: DashdInterface,
+                 polisd_intf: PolisdInterface,
                  masternode: MasternodeConfig,
                  on_mn_config_updated_callback: Callable):
         QDialog.__init__(self, main_dlg)
@@ -32,7 +32,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
         self.main_dlg = main_dlg
         self.masternode = masternode
         self.app_config = app_config
-        self.dashd_intf = dashd_intf
+        self.polisd_intf = polisd_intf
         self.on_mn_config_updated_callback = on_mn_config_updated_callback
         self.dmn_protx_hash = self.masternode.dmn_tx_hash
         self.dmn_actual_operator_pubkey = ""
@@ -93,7 +93,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
         try:
             protx = None
             if not self.dmn_protx_hash:
-                for protx in self.dashd_intf.protx('list', 'registered', True):
+                for protx in self.polisd_intf.protx('list', 'registered', True):
                     protx_state = protx.get('state')
                     if (protx_state and protx_state.get(
                             'service') == self.masternode.ip + ':' + self.masternode.port) or \
@@ -107,7 +107,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
 
             if not protx:
                 try:
-                    protx = self.dashd_intf.protx('info', self.dmn_protx_hash)
+                    protx = self.polisd_intf.protx('info', self.dmn_protx_hash)
                 except Exception as e:
                     if str(e).find('not found') >= 0:
                         raise Exception(f'A protx transaction with this hash does not exist or is inactive: '
@@ -155,8 +155,8 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
         if self.upd_payout_active:
             payout_address = self.edtOperatorPayoutAddress.text()
             if payout_address:
-                if not validate_address(payout_address, self.app_config.dash_network):
-                    raise Exception('Invalid payout Dash address')
+                if not validate_address(payout_address, self.app_config.polis_network):
+                    raise Exception('Invalid payout Polis address')
                 else:
                     self.dmn_new_operator_payout_address = payout_address
             else:
@@ -196,8 +196,8 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
                 f'"{self.masternode.dmn_operator_private_key}" "{self.dmn_new_operator_payout_address}" ' \
                 f'"<span style="color:green">feeSourceAddress</span>"'
             msg = '<ol>' \
-                  '<li>Start a Dash Core wallet with sufficient funds to cover a transaction fee.</li>'
-            msg += '<li>Execute the following command in the Dash Core debug console:<br><br>'
+                  '<li>Start a Polis Core wallet with sufficient funds to cover a transaction fee.</li>'
+            msg += '<li>Execute the following command in the Polis Core debug console:<br><br>'
             msg += '  <code style=\"background-color:#e6e6e6\">' + cmd + '</code></li><br>'
             msg += 'Replace <span style="color:green">feeSourceAddress</span> with the address being the ' \
                    'source of the transaction fee.'
@@ -235,7 +235,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
                       funding_address]
 
             try:
-                upd_service_support = self.dashd_intf.checkfeaturesupport('protx_update_service',
+                upd_service_support = self.polisd_intf.checkfeaturesupport('protx_update_service',
                                                                           self.app_config.app_version)
                 if not upd_service_support.get('enabled'):
                     if upd_service_support.get('message'):
@@ -261,7 +261,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
                 try:
                     # find an address to be used as the source of the transaction fees
                     min_fee = round(1024 * FEE_DUFF_PER_BYTE / 1e8, 8)
-                    balances = self.dashd_intf.listaddressbalances(min_fee)
+                    balances = self.polisd_intf.listaddressbalances(min_fee)
                     bal_list = []
                     for addr in balances:
                         bal_list.append({'address': addr, 'amount': balances[addr]})
@@ -275,7 +275,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
                                     "public RPC node and the funding address for the transaction fee will "
                                     "be estimated during the `update_registrar` call")
 
-            upd_tx_hash = self.dashd_intf.rpc_call(True, False, 'protx', *params)
+            upd_tx_hash = self.polisd_intf.rpc_call(True, False, 'protx', *params)
 
             if upd_tx_hash:
                 logging.info('update_service successfully executed, tx hash: ' + upd_tx_hash)

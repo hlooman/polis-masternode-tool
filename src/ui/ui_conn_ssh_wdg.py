@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/Projects/dash-masternode-tool/src/ui/ui_conn_ssh_wdg.ui'
+# Form implementation generated from reading ui file '/Users/blogin/Projects/polis-masternode-tool/src/ui/ui_conn_ssh_wdg.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #

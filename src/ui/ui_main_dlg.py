@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/Projects/dash-masternode-tool/src/ui/ui_main_dlg.ui'
+# Form implementation generated from reading ui file '/Users/blogin/Projects/polis-masternode-tool/src/ui/ui_main_dlg.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -364,7 +364,7 @@ class Ui_MainWindow(object):
         self.btnUpdMnOperatorKey.setText(_translate("MainWindow", "Update operator key"))
         self.btnUpdMnVotingKey.setToolTip(_translate("MainWindow", "Update the masternode voting key on the network."))
         self.btnUpdMnVotingKey.setText(_translate("MainWindow", "Update voting key"))
-        self.btnUpdMnService.setToolTip(_translate("MainWindow", "Update the masternode IP:port and/or the operator reward Dash address."))
+        self.btnUpdMnService.setToolTip(_translate("MainWindow", "Update the masternode IP:port and/or the operator reward Polis address."))
         self.btnUpdMnService.setText(_translate("MainWindow", "Update service"))
         self.btnRevokeMn.setToolTip(_translate("MainWindow", "Revoke the masternode operator key."))
         self.btnRevokeMn.setText(_translate("MainWindow", "Revoke operator"))
@@ -387,7 +387,7 @@ class Ui_MainWindow(object):
         self.action_save_config_file.setText(_translate("MainWindow", "Save Configuration"))
         self.action_save_config_file.setShortcut(_translate("MainWindow", "Ctrl+S"))
         self.action_check_network_connection.setText(_translate("MainWindow", "Check Network Connection"))
-        self.action_check_network_connection.setToolTip(_translate("MainWindow", "Check Dash Network Connection"))
+        self.action_check_network_connection.setToolTip(_translate("MainWindow", "Check Polis Network Connection"))
         self.action_open_settings_window.setText(_translate("MainWindow", "Settings"))
         self.action_open_settings_window.setToolTip(_translate("MainWindow", "Settings"))
         self.action_open_proposals_window.setText(_translate("MainWindow", "Proposals"))
@@ -398,7 +398,7 @@ class Ui_MainWindow(object):
         self.action_check_for_updates.setText(_translate("MainWindow", "Check For Updates"))
         self.action_open_log_file.setText(_translate("MainWindow", "Open Log File"))
         self.action_open_log_file.setShortcut(_translate("MainWindow", "Meta+Alt+L"))
-        self.action_about_app.setText(_translate("MainWindow", "About DashMasternodeTool..."))
+        self.action_about_app.setText(_translate("MainWindow", "About PolisMasternodeTool..."))
         self.action_import_masternode_conf.setText(_translate("MainWindow", "Import masternodes from the masternode.conf file..."))
         self.action_about_qt.setText(_translate("MainWindow", "About Qt..."))
         self.action_about_qt.setToolTip(_translate("MainWindow", "About Qt"))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/Projects/dash-masternode-tool/src/ui/ui_upd_mn_service_dlg.ui'
+# Form implementation generated from reading ui file '/Users/blogin/Projects/polis-masternode-tool/src/ui/ui_upd_mn_service_dlg.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -161,7 +161,7 @@ class Ui_UpdMnServiceDlg(object):
     def retranslateUi(self, UpdMnServiceDlg):
         _translate = QtCore.QCoreApplication.translate
         UpdMnServiceDlg.setWindowTitle(_translate("UpdMnServiceDlg", "Update service"))
-        self.label.setText(_translate("UpdMnServiceDlg", "The transaction type associated with this action (ProUpServTx) is used to update information relating to the operator (<a href=\"https://docs.dash.org/en/stable/masternodes/maintenance.html#proupservtx\">details</a>)."))
+        self.label.setText(_translate("UpdMnServiceDlg", "The transaction type associated with this action (ProUpServTx) is used to update information relating to the operator (<a href=\"https://docs.polis.org/en/stable/masternodes/maintenance.html#proupservtx\">details</a>)."))
         self.lblOperatorPayout.setText(_translate("UpdMnServiceDlg", "<b>Operator Payout address</b> "))
         self.lblIP.setText(_translate("UpdMnServiceDlg", "IP"))
         self.label_2.setText(_translate("UpdMnServiceDlg", "Port"))

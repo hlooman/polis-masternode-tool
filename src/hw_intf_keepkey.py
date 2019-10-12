@@ -15,7 +15,7 @@ from keepkeylib.client import BaseClient as keepkey_BaseClient, CallException
 from keepkeylib import messages_pb2 as keepkey_proto
 from keepkeylib.tx_api import TxApiInsight
 from mnemonic import Mnemonic
-import dash_utils
+import polis_utils
 from common import CancelException
 from hw_common import ask_for_pin_callback, ask_for_pass_callback, ask_for_word_callback, \
     HwSessionInfo, select_hw_device
@@ -214,16 +214,16 @@ def connect_keepkey(passphrase_encoding: Optional[str] = 'NFC',
 
 class MyTxApiInsight(TxApiInsight):
 
-    def __init__(self, network, url, dashd_inf, cache_dir, zcash=None):
+    def __init__(self, network, url, polisd_inf, cache_dir, zcash=None):
         TxApiInsight.__init__(self, network, url, zcash)
-        self.dashd_inf = dashd_inf
+        self.polisd_inf = polisd_inf
         self.cache_dir = cache_dir
         self.skip_cache = False
 
     def fetch_json(self, url, resource, resourceid):
         if resource == 'tx':
             try:
-                j = self.dashd_inf.getrawtransaction(resourceid, 1, skip_cache=self.skip_cache)
+                j = self.polisd_inf.getrawtransaction(resourceid, 1, skip_cache=self.skip_cache)
                 return j
             except Exception as e:
                 raise
@@ -269,7 +269,7 @@ class MyTxApiInsight(TxApiInsight):
                     "extra_data_len (%d) does not match calculated length (%d)"
                     % (data["extraPayloadSize"], len(data["extraPayload"]) * 2)
                 )
-            t.extra_data = dash_utils.num_to_varint(data["extraPayloadSize"]) + bytes.fromhex(
+            t.extra_data = polis_utils.num_to_varint(data["extraPayloadSize"]) + bytes.fromhex(
                 data["extraPayload"]
             )
 
@@ -291,12 +291,12 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
     :return: tuple (serialized tx, total transaction amount in satoshis)
     """
 
-    insight_network = 'insight_dash'
+    insight_network = 'insight_polis'
     if hw_session.app_config.is_testnet():
         insight_network += '_testnet'
-    dash_network = hw_session.app_config.dash_network
+    polis_network = hw_session.app_config.polis_network
 
-    tx_api = MyTxApiInsight(insight_network, '', hw_session.dashd_intf, hw_session.app_config.tx_cache_dir)
+    tx_api = MyTxApiInsight(insight_network, '', hw_session.polisd_intf, hw_session.app_config.tx_cache_dir)
     client = hw_session.hw_client
     client.set_tx_api(tx_api)
     inputs = []
@@ -314,10 +314,10 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
     outputs_amount = 0
     for out in tx_outputs:
         outputs_amount += out.satoshis
-        if out.address[0] in dash_utils.get_chain_params(dash_network).B58_PREFIXES_SCRIPT_ADDRESS:
+        if out.address[0] in polis_utils.get_chain_params(polis_network).B58_PREFIXES_SCRIPT_ADDRESS:
             stype = proto_types.PAYTOSCRIPTHASH
             logging.debug('Transaction type: PAYTOSCRIPTHASH' + str(stype))
-        elif out.address[0] in dash_utils.get_chain_params(dash_network).B58_PREFIXES_PUBKEY_ADDRESS:
+        elif out.address[0] in polis_utils.get_chain_params(polis_network).B58_PREFIXES_PUBKEY_ADDRESS:
             stype = proto_types.PAYTOADDRESS
             logging.debug('Transaction type: PAYTOADDRESS ' + str(stype))
         else:

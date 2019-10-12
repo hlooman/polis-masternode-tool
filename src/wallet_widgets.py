@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import QPushButton, QToolButton, QWidgetItem, QSpacerItem, 
     QLabel, QComboBox, QMenu, QMessageBox, QVBoxLayout, QCheckBox, QItemDelegate, QStyleOptionViewItem, QStyle
 import app_cache
 import app_utils
-import dash_utils
+import polis_utils
 from app_defs import FEE_DUFF_PER_BYTE, MIN_TX_FEE
 from common import CancelException
 from encrypted_files import write_file_encrypted, read_file_encrypted
@@ -33,7 +33,7 @@ CSV_SEPARATOR = ';'
 CACHE_ITEM_DATA_FILE_MRU_LIST = 'SendFundsDestination_DataFileMRUList'
 
 
-log = logging.getLogger('dmt.wallet_dlg')
+log = logging.getLogger('pmt.wallet_dlg')
 
 
 class SendFundsDestinationItem(QObject):
@@ -162,7 +162,7 @@ class SendFundsDestinationItem(QObject):
                 self.lbl_second_unit_value.setText('')
         elif self.values_unit == OUTPUT_VALUE_UNIT_PERCENT:
             if self.value_amount is not None:
-                self.lbl_second_unit_value.setText(app_utils.to_string(round(self.value_amount, 8)) + ' Dash')
+                self.lbl_second_unit_value.setText(app_utils.to_string(round(self.value_amount, 8)) + ' Polis')
             else:
                 self.lbl_second_unit_value.setText('')
 
@@ -222,7 +222,7 @@ class SendFundsDestinationItem(QObject):
         address = self.edt_dest_address.text()
         if not address:
             valid = False
-        elif not dash_utils.validate_address(address.strip(), self.app_config.dash_network):
+        elif not polis_utils.validate_address(address.strip(), self.app_config.polis_network):
             valid = False
         else:
             self.message = None
@@ -370,7 +370,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
 
         # the last row of the grid layout is dedicated to 'fee' controls
         self.lbl_fee = QLabel(self.scroll_area_widget)
-        self.lbl_fee.setText('Fee [Dash]')
+        self.lbl_fee.setText('Fee [Polis]')
         self.lbl_fee.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.lay_addresses.addWidget(self.lbl_fee, 1, 0)
 
@@ -561,7 +561,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
                 self.change_amount = ch
                 self.update_the_change_ui()
         elif self.values_unit == OUTPUT_VALUE_UNIT_PERCENT:
-            # in this mode, due to the pct -> dash conversion for each of the outputs, there can be left a reminder,
+            # in this mode, due to the pct -> polis conversion for each of the outputs, there can be left a reminder,
             # that has to be added to the change or the fee, depending on its value
             self.update_change_and_fee()
 
@@ -576,7 +576,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
         return len(self.recipients) + change_recipient
 
     def calculate_the_change(self) -> float:
-        """Returns the change value in Dash."""
+        """Returns the change value in Polis."""
         sum = 0.0
         for idx, addr in enumerate(self.recipients):
             amt = addr.get_value(default_value=0.0)
@@ -829,7 +829,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
     def display_totals(self):
         recipients = self.get_number_of_recipients()
         bytes = (self.inputs_count * 148) + (recipients * 34) + 10
-        text = f'<span class="label"><b>Total value of the selected inputs:</b>&nbsp;</span><span class="value">&nbsp;{self.inputs_total_amount} Dash&nbsp;</span>'
+        text = f'<span class="label"><b>Total value of the selected inputs:</b>&nbsp;</span><span class="value">&nbsp;{self.inputs_total_amount} Polis&nbsp;</span>'
         if self.inputs_total_amount > 0:
             text += f'<span class="label">&nbsp;<b>Inputs:</b>&nbsp;</span><span class="value">&nbsp;{self.inputs_count}&nbsp;</span>' \
                     f'<span class="label">&nbsp;<b>Outputs:</b>&nbsp;</span><span class="value">&nbsp;{recipients}&nbsp;</span>' \
@@ -962,7 +962,7 @@ class SendFundsDestination(QtWidgets.QWidget, WndUtils):
                     address = elems[0].strip()
                     value = elems[1].strip()
 
-                    address_valid = dash_utils.validate_address(address, dash_network=None)
+                    address_valid = polis_utils.validate_address(address, polis_network=None)
                     if not address_valid:
                         if line_idx == 0 and re.match(r'^[A-Za-z_]+$', address):
                             continue  # header line
@@ -1126,7 +1126,7 @@ class WalletMnItemDelegate(QItemDelegate):
 
             r.setTop(r.top() + fm.height() + WalletMnItemDelegate.CellLinesMargin)
             if mn.address.balance is not None:
-                balance_str = 'Balance: ' + app_utils.to_string(mn.address.balance / 1e8) + ' Dash'
+                balance_str = 'Balance: ' + app_utils.to_string(mn.address.balance / 1e8) + ' Polis'
             else:
                 balance_str = 'Balance: unknown'
             painter.drawText(r, Qt.AlignLeft, balance_str)
@@ -1196,7 +1196,7 @@ class WalletAccountItemDelegate(QItemDelegate):
 
                 r.setTop(r.top() + fm.height() + WalletMnItemDelegate.CellLinesMargin)
                 if data.balance is not None:
-                    balance_str = 'Balance: ' + app_utils.to_string(data.balance / 1e8) + ' Dash'
+                    balance_str = 'Balance: ' + app_utils.to_string(data.balance / 1e8) + ' Polis'
                 else:
                     balance_str = 'Balance: unknown'
                 painter.drawText(r, Qt.AlignLeft, balance_str)

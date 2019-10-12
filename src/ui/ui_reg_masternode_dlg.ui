@@ -619,7 +619,7 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>&lt;b&gt;Choose the Dash wallet type to be used for submitting ProRegTx transaction.&lt;/b&gt;</string>
+          <string>&lt;b&gt;Choose the Polis wallet type to be used for submitting ProRegTx transaction.&lt;/b&gt;</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -627,7 +627,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QGroupBox" name="gbDashNodeType">
+        <widget class="QGroupBox" name="gbPolisNodeType">
          <property name="title">
           <string/>
          </property>
@@ -639,16 +639,16 @@
            <number>12</number>
           </property>
           <item>
-           <widget class="QRadioButton" name="rbDMTDashNodeType">
+           <widget class="QRadioButton" name="rbPMTPolisNodeType">
             <property name="text">
-             <string>Remote Dash RPC Node (automatic method)</string>
+             <string>Remote Polis RPC Node (automatic method)</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QRadioButton" name="rbOwnDashNodeType">
+           <widget class="QRadioButton" name="rbOwnPolisNodeType">
             <property name="text">
-             <string>Your own Dash-Qt wallet (manual method)</string>
+             <string>Your own Polis-Qt wallet (manual method)</string>
             </property>
            </widget>
           </item>
@@ -656,7 +656,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="lblDashNodeTypeMessage">
+        <widget class="QLabel" name="lblPolisNodeTypeMessage">
          <property name="text">
           <string/>
          </property>
@@ -788,7 +788,7 @@
        <item>
         <widget class="QLabel" name="label_10">
          <property name="text">
-          <string>&lt;span style=&quot;color:red&quot;&gt;&lt;b&gt;Important:&lt;/b&gt;&lt;/span&gt; A Dash Core wallet with sufficient funds to cover transaction fees is required to complete the steps below. The operations are performed from the Debug console in the Tools menu.</string>
+          <string>&lt;span style=&quot;color:red&quot;&gt;&lt;b&gt;Important:&lt;/b&gt;&lt;/span&gt; A Polis Core wallet with sufficient funds to cover transaction fees is required to complete the steps below. The operations are performed from the Debug console in the Tools menu.</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -801,7 +801,7 @@
        <item>
         <widget class="QLabel" name="label_12">
          <property name="text">
-          <string>&lt;b&gt;1. Enter the funding address from your Dash Core wallet:&lt;/b&gt;</string>
+          <string>&lt;b&gt;1. Enter the funding address from your Polis Core wallet:&lt;/b&gt;</string>
          </property>
         </widget>
        </item>
@@ -810,7 +810,7 @@
          <item>
           <widget class="QLineEdit" name="edtManualFundingAddress">
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the address from your Dash Core wallet that has sufficient funds to cover transaction fees.&lt;br&gt;&lt;br&gt;You can check the balances of individual addresses by entering the following command in the debug console: &lt;code&gt;listaddressbalances&lt;/code&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the address from your Polis Core wallet that has sufficient funds to cover transaction fees.&lt;br&gt;&lt;br&gt;You can check the balances of individual addresses by entering the following command in the debug console: &lt;code&gt;listaddressbalances&lt;/code&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
@@ -829,7 +829,7 @@
        <item>
         <widget class="QLabel" name="label_13">
          <property name="text">
-          <string>&lt;b&gt;2. Execute the following command in the Dash wallet's debug console:&lt;/b&gt;</string>
+          <string>&lt;b&gt;2. Execute the following command in the Polis wallet's debug console:&lt;/b&gt;</string>
          </property>
         </widget>
        </item>
@@ -933,7 +933,7 @@
        <item>
         <widget class="QLabel" name="label_17">
          <property name="text">
-          <string>&lt;b&gt;4. Execute the following command in the Dash wallet's debug console:&lt;/b&gt;</string>
+          <string>&lt;b&gt;4. Execute the following command in the Polis wallet's debug console:&lt;/b&gt;</string>
          </property>
         </widget>
        </item>
@@ -1164,7 +1164,7 @@
   <tabstop>edtProtxSummary</tabstop>
   <tabstop>edtManualFundingAddress</tabstop>
   <tabstop>btnClose</tabstop>
-  <tabstop>rbOwnDashNodeType</tabstop>
+  <tabstop>rbOwnPolisNodeType</tabstop>
   <tabstop>btnManualProtxPrepareResultPaste</tabstop>
   <tabstop>btnBack</tabstop>
   <tabstop>btnManualProtxSubmitCopy</tabstop>
@@ -1175,7 +1175,7 @@
   <tabstop>edtSummaryDMNOperatorKey</tabstop>
   <tabstop>btnSummaryDMNOperatorKeyCopy</tabstop>
   <tabstop>edtManualTxHash</tabstop>
-  <tabstop>rbDMTDashNodeType</tabstop>
+  <tabstop>rbPMTPolisNodeType</tabstop>
  </tabstops>
  <resources/>
  <connections/>

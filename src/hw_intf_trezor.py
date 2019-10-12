@@ -26,7 +26,7 @@ from trezorlib.ui import PIN_CURRENT, PIN_NEW, PIN_CONFIRM
 from trezorlib import device
 from trezorlib import coins
 
-import dash_utils
+import polis_utils
 from common import CancelException
 from hw_common import ask_for_pass_callback, ask_for_pin_callback, \
     ask_for_word_callback, select_hw_device, HwSessionInfo
@@ -35,7 +35,7 @@ import wallet_common
 from wnd_utils import WndUtils
 
 
-log = logging.getLogger('dmt.hw_intf_trezor')
+log = logging.getLogger('pmt.hw_intf_trezor')
 
 
 class TrezorUi(object):
@@ -274,8 +274,8 @@ def connect_trezor(device_id: Optional[str] = None,
         raise Exception(msg)
 
 
-def is_dash(coin):
-    return coin["coin_name"].lower().startswith("dash")
+def is_polis(coin):
+    return coin["coin_name"].lower().startswith("polis")
 
 
 def json_to_tx(coin, data):
@@ -304,7 +304,7 @@ def json_to_tx(coin, data):
             extra_data_len = 1 + joinsplit_cnt * 1802 + 32 + 64
             t.extra_data = rawtx[-extra_data_len:]
 
-    if is_dash(coin):
+    if is_polis(coin):
         dip2_type = data.get("type", 0)
 
         if t.version == 3 and dip2_type != 0:
@@ -318,7 +318,7 @@ def json_to_tx(coin, data):
                     "extra_data_len (%d) does not match calculated length (%d)"
                     % (data["extraPayloadSize"], len(data["extraPayload"]) * 2)
                 )
-            t.extra_data = dash_utils.num_to_varint(data["extraPayloadSize"]) + bytes.fromhex(
+            t.extra_data = polis_utils.num_to_varint(data["extraPayloadSize"]) + bytes.fromhex(
                 data["extraPayload"]
             )
 
@@ -332,9 +332,9 @@ def json_to_tx(coin, data):
 
 class MyTxApiInsight(TxApi):
 
-    def __init__(self, network, url, dashd_inf, cache_dir):
+    def __init__(self, network, url, polisd_inf, cache_dir):
         TxApi.__init__(self, network)
-        self.dashd_inf = dashd_inf
+        self.polisd_inf = polisd_inf
         self.cache_dir = cache_dir
         self.skip_cache = False
 
@@ -343,7 +343,7 @@ class MyTxApiInsight(TxApi):
             if len(path) >= 2:
                 if path[0] == 'tx':
                     try:
-                        j = self.dashd_inf.getrawtransaction(path[1], 1, skip_cache=self.skip_cache)
+                        j = self.polisd_inf.getrawtransaction(path[1], 1, skip_cache=self.skip_cache)
                         return j
                     except Exception as e:
                         raise
@@ -355,10 +355,10 @@ class MyTxApiInsight(TxApi):
             raise Exception('No arguments')
 
     def get_block_hash(self, block_number):
-        return self.dashd_inf.getblockhash(block_number)
+        return self.polisd_inf.getblockhash(block_number)
 
     def current_height(self):
-        return self.dashd_inf.getheight()
+        return self.polisd_inf.getheight()
 
     def get_tx_data(self, txhash):
         data = self.fetch_json("tx", txhash)
@@ -395,10 +395,10 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
                 txes[prev_hash] = tx
         return txes
 
-    insight_network = 'insight_dash'
+    insight_network = 'insight_polis'
     if hw_session.app_config.is_testnet():
         insight_network += '_testnet'
-    dash_network = hw_session.app_config.dash_network
+    polis_network = hw_session.app_config.polis_network
 
     c_name = hw_session.app_config.hw_coin_name
     coin = coins.by_name[c_name]
@@ -406,7 +406,7 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
     coin['bitcore'].clear()
     coin['bitcore'].append(url)
 
-    tx_api = MyTxApiInsight(coin, '', hw_session.dashd_intf, hw_session.app_config.tx_cache_dir)
+    tx_api = MyTxApiInsight(coin, '', hw_session.polisd_intf, hw_session.app_config.tx_cache_dir)
     client = hw_session.hw_client
     inputs = []
     outputs = []
@@ -415,7 +415,7 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
         if not utxo.bip32_path:
             raise Exception('No BIP32 path for UTXO ' + utxo.txid)
 
-        address_n = dash_utils.bip32_path_string_to_n(utxo.bip32_path)
+        address_n = polis_utils.bip32_path_string_to_n(utxo.bip32_path)
         it = trezor_proto.TxInputType(
             address_n=address_n,
             prev_hash=binascii.unhexlify(utxo.txid),
@@ -427,16 +427,16 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
     outputs_amount = 0
     for out in tx_outputs:
         outputs_amount += out.satoshis
-        if out.address[0] in dash_utils.get_chain_params(dash_network).B58_PREFIXES_SCRIPT_ADDRESS:
+        if out.address[0] in polis_utils.get_chain_params(polis_network).B58_PREFIXES_SCRIPT_ADDRESS:
             stype = trezor_proto.OutputScriptType.PAYTOSCRIPTHASH
             logging.debug('Transaction type: PAYTOSCRIPTHASH' + str(stype))
-        elif out.address[0] in dash_utils.get_chain_params(dash_network).B58_PREFIXES_PUBKEY_ADDRESS:
+        elif out.address[0] in polis_utils.get_chain_params(polis_network).B58_PREFIXES_PUBKEY_ADDRESS:
             stype = trezor_proto.OutputScriptType.PAYTOADDRESS
             logging.debug('Transaction type: PAYTOADDRESS ' + str(stype))
         else:
             raise Exception('Invalid prefix of the destination address.')
         if out.bip32_path:
-            address_n = dash_utils.bip32_path_string_to_n(out.bip32_path)
+            address_n = polis_utils.bip32_path_string_to_n(out.bip32_path)
         else:
             address_n = None
 
@@ -471,7 +471,7 @@ def sign_tx(hw_session: HwSessionInfo, utxos_to_spend: List[wallet_common.UtxoTy
 
 def sign_message(hw_session: HwSessionInfo, bip32path, message):
     client = hw_session.hw_client
-    address_n = dash_utils.bip32_path_string_to_n(bip32path)
+    address_n = polis_utils.bip32_path_string_to_n(bip32path)
     try:
         return btc.sign_message(client, hw_session.app_config.hw_coin_name, address_n, message)
     except exceptions.Cancelled:

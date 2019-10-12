@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QDialog, QTableView, QHeaderView, QMessageBox, QSpli
 from cryptography.fernet import Fernet
 import app_cache
 import app_utils
-import dash_utils
+import polis_utils
 import hw_intf
 from app_defs import HWType, DEBUG_MODE
 from bip44_wallet import Bip44Wallet, Bip44Entry, BreakFetchTransactionsException, SwitchedHDIdentityException
@@ -34,7 +34,7 @@ from sign_message_dlg import SignMessageDlg
 from ui.ui_wallet_dlg_options1 import Ui_WdgOptions1
 from ui.ui_wdg_wallet_txes_filter import Ui_WdgWalletTxesFilter
 from wallet_common import UtxoType, Bip44AccountType, Bip44AddressType, TxOutputType, TxType
-from dashd_intf import DashdInterface, DashdIndexException
+from polisd_intf import PolisdInterface, PolisdIndexException
 from db_intf import DBCache
 from hw_common import HwSessionInfo, HWNotConnectedException
 from thread_fun_dlg import WorkerThread, CtrlObject
@@ -66,7 +66,7 @@ MAIN_VIEW_BIP44_ACCOUNTS = 1
 MAIN_VIEW_MASTERNODE_LIST = 2
 
 
-log = logging.getLogger('dmt.wallet_dlg')
+log = logging.getLogger('pmt.wallet_dlg')
 
 
 class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
@@ -93,10 +93,10 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
             self.masternode_addresses.append((mn.collateralAddress.strip(), mn.collateralBip32Path.strip()))
             log.debug(f'WalletDlg initial_mn_sel({idx}) addr - path: {mn.collateralAddress}-{mn.collateralBip32Path}')
 
-        self.dashd_intf: DashdInterface = main_ui.dashd_intf
+        self.polisd_intf: PolisdInterface = main_ui.polisd_intf
         self.db_intf: DBCache = main_ui.app_config.db_intf
-        self.bip44_wallet = Bip44Wallet(self.app_config.hw_coin_name, self.hw_session, self.db_intf, self.dashd_intf,
-                                        self.app_config.dash_network)
+        self.bip44_wallet = Bip44Wallet(self.app_config.hw_coin_name, self.hw_session, self.db_intf, self.polisd_intf,
+                                        self.app_config.polis_network)
         self.bip44_wallet.on_account_added_callback = self.on_bip44_account_added
         self.bip44_wallet.on_account_data_changed_callback = self.on_bip44_account_changed
         self.bip44_wallet.on_account_address_added_callback = self.on_bip44_account_address_added
@@ -341,12 +341,12 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
             self.utxo_src_mode = mode
 
         # base bip32 path:
-        path = app_cache.get_value(CACHE_ITEM_HW_ACCOUNT_BASE_PATH.replace('%NETWORK%', self.app_config.dash_network),
-                                   dash_utils.get_default_bip32_base_path(self.app_config.dash_network), str)
-        if dash_utils.validate_bip32_path(path):
+        path = app_cache.get_value(CACHE_ITEM_HW_ACCOUNT_BASE_PATH.replace('%NETWORK%', self.app_config.polis_network),
+                                   polis_utils.get_default_bip32_base_path(self.app_config.polis_network), str)
+        if polis_utils.validate_bip32_path(path):
             self.hw_account_base_bip32_path = path
         else:
-            self.hw_account_base_bip32_path = dash_utils.get_default_bip32_base_path(self.app_config.dash_network)
+            self.hw_account_base_bip32_path = polis_utils.get_default_bip32_base_path(self.app_config.polis_network)
 
         # selected account id:
         self.hw_selected_account_id = app_cache.get_value(CACHE_ITEM_HW_SEL_ACCOUNT_ADDR_ID, 0x80000000, int)
@@ -357,7 +357,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
         # restore the selected masternodes
         if self.initial_mn_sel is None:
             sel_hashes = app_cache.get_value(
-                CACHE_ITEM_UTXO_SRC_MASTRNODE.replace('%NETWORK%', self.app_config.dash_network), [], list)
+                CACHE_ITEM_UTXO_SRC_MASTRNODE.replace('%NETWORK%', self.app_config.polis_network), [], list)
             for hash in sel_hashes:
                 mni = self.mn_model.get_mn_by_addr_hash(hash)
                 if mni and mni not in self.selected_mns:
@@ -370,7 +370,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
                 pass
 
         # restore last list of used addresses
-        enc_json_str = app_cache.get_value(CACHE_ITEM_LAST_RECIPIENTS.replace('%NETWORK%', self.app_config.dash_network), None, str)
+        enc_json_str = app_cache.get_value(CACHE_ITEM_LAST_RECIPIENTS.replace('%NETWORK%', self.app_config.polis_network), None, str)
         if enc_json_str:
             try:
                 # hw encryption key may be not available so use the generated key to not save addresses as plain text
@@ -396,7 +396,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
         app_cache.save_window_size(self)
         app_cache.set_value(CACHE_ITEM_MAIN_SPLITTER_SIZES, self.splitterMain.sizes())
         app_cache.set_value(CACHE_ITEM_UTXO_SOURCE_MODE, self.utxo_src_mode)
-        app_cache.set_value(CACHE_ITEM_HW_ACCOUNT_BASE_PATH.replace('%NETWORK%', self.app_config.dash_network),
+        app_cache.set_value(CACHE_ITEM_HW_ACCOUNT_BASE_PATH.replace('%NETWORK%', self.app_config.polis_network),
                             self.hw_account_base_bip32_path)
         app_cache.set_value(CACHE_ITEM_HW_SEL_ACCOUNT_ADDR_ID, self.hw_selected_account_id)
 
@@ -406,7 +406,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
             if mna.address.address:
                 h = hashlib.sha256(bytes(mna.address.address, 'utf-8')).hexdigest()
                 sel_hashes.append(h)
-        app_cache.set_value(CACHE_ITEM_UTXO_SRC_MASTRNODE.replace('%NETWORK%', self.app_config.dash_network),
+        app_cache.set_value(CACHE_ITEM_UTXO_SRC_MASTRNODE.replace('%NETWORK%', self.app_config.polis_network),
                             sel_hashes)
 
         self.utxo_table_model.save_col_defs(CACHE_ITEM_UTXO_COLS)
@@ -426,7 +426,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
                 rcp_data = rcp_data.decode('ascii')
             except Exception:
                 log.exception('Cannot save data to cache.')
-        app_cache.set_value(CACHE_ITEM_LAST_RECIPIENTS.replace('%NETWORK%', self.app_config.dash_network), rcp_data)
+        app_cache.set_value(CACHE_ITEM_LAST_RECIPIENTS.replace('%NETWORK%', self.app_config.polis_network), rcp_data)
         app_cache.set_value(CACHE_ITEM_SHOW_ACCOUNT_ADDRESSES, self.accounts_view_show_individual_addresses)
         app_cache.set_value(CACHE_ITEM_SHOW_ZERO_BALANCE_ADDRESSES, self.accounts_view_show_zero_balance_addesses)
         app_cache.set_value(CACHE_ITEM_SHOW_NOT_USED_ADDRESSES, self.accounts_view_show_not_used_addresses)
@@ -552,7 +552,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
     @pyqtSlot()
     def on_btnSend_clicked(self):
         """
-        Sends funds to Dash address specified by user.
+        Sends funds to Polis address specified by user.
         """
         try:
             self.allow_fetch_transactions = False
@@ -573,13 +573,13 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
 
                 # verify if:
                 #  - utxo is the masternode collateral transation
-                #  - the utxo Dash (signing) address matches the hardware wallet address for a given path
+                #  - the utxo Polis (signing) address matches the hardware wallet address for a given path
                 for utxo_idx, utxo in enumerate(tx_inputs):
                     total_satoshis_inputs += utxo.satoshis
                     log.info(f'UTXO satosis: {utxo.satoshis}')
                     if utxo.is_collateral:
                         if self.queryDlg(
-                                "Warning: you are going to transfer masternode's collateral (1000 Dash) transaction "
+                                "Warning: you are going to transfer masternode's collateral (1000 Polis) transaction "
                                 "output. Proceeding will result in broken masternode.\n\n"
                                 "Do you really want to continue?",
                                 buttons=QMessageBox.Yes | QMessageBox.Cancel,
@@ -599,7 +599,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
                         bip32_to_address[bip32_path] = addr_hw
 
                     if addr_hw != utxo.address:
-                        self.errorMsg("<html style=\"font-weight:normal\">Dash address inconsistency between UTXO "
+                        self.errorMsg("<html style=\"font-weight:normal\">Polis address inconsistency between UTXO "
                                       f"({utxo_idx+1}) and HW path: {bip32_path}.<br><br>"
                                       f"<b>HW address</b>: {addr_hw}<br>"
                                       f"<b>UTXO address</b>: {utxo.address}<br><br>"
@@ -670,7 +670,7 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
                             self.errorMsg("Transaction's length exceeds 90000 bytes. Select less UTXOs and try again.")
                         else:
                             after_send_tx_fun = partial(self.process_after_sending_transaction, tx_inputs, tx_outputs)
-                            tx_dlg = TransactionDlg(self, self.main_ui.app_config, self.dashd_intf, tx_hex, use_is,
+                            tx_dlg = TransactionDlg(self, self.main_ui.app_config, self.polisd_intf, tx_hex, use_is,
                                                     tx_inputs, tx_outputs, self.cur_hd_tree_id, self.hw_session,
                                                     after_send_tx_fun, fn_show_address_on_hw=self.show_address_on_hw)
                             tx_dlg.exec_()
@@ -1633,8 +1633,8 @@ class WalletDlg(QDialog, ui_wallet_dlg.Ui_WalletDlg, WndUtils):
 <table>
 <tr><td class="lbl">{addr_lbl}</td><td>{addr_str}</td></tr>
 <tr><td class="lbl">Path</td><td>{addr_path}</td></tr>
-<tr><td class="lbl">Balance</td><td>{app_utils.to_string(balance/1e8)} Dash</td></tr>
-<tr><td class="lbl">Received</td><td>{app_utils.to_string(received/1e8)} Dash</td></tr>
+<tr><td class="lbl">Balance</td><td>{app_utils.to_string(balance/1e8)} Polis</td></tr>
+<tr><td class="lbl">Received</td><td>{app_utils.to_string(received/1e8)} Polis</td></tr>
 </table>
 </body>
 """

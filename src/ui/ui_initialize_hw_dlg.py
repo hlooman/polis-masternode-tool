@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/PycharmProjects/DMT-git/src/ui/ui_initialize_hw_dlg.ui'
+# Form implementation generated from reading ui file '/Users/blogin/PycharmProjects/PMT-git/src/ui/ui_initialize_hw_dlg.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -570,7 +570,7 @@ class Ui_HwInitializeDlg(object):
         self.lblStepWordListMessage2.setText(_translate("HwInitializeDlg", "You can copy and paste the complete set of seed words into this dialog directly (separated by spaces, commas or line breaks)."))
         self.lblHwOptionsTitle.setText(_translate("HwInitializeDlg", "<b>Set your hardware wallet initialization options</b>"))
         self.lblHwOptionsDeviceLabel.setText(_translate("HwInitializeDlg", "Device label:"))
-        self.chbHwOptionsUsePassphrase.setWhatsThis(_translate("HwInitializeDlg", "<html><head/><body><p>Check the link attached &lt;a href=&quot;dash.org&quot;&gt;dash.org&lt;/a&gt;</p></body></html>"))
+        self.chbHwOptionsUsePassphrase.setWhatsThis(_translate("HwInitializeDlg", "<html><head/><body><p>Check the link attached &lt;a href=&quot;polis.org&quot;&gt;polis.org&lt;/a&gt;</p></body></html>"))
         self.chbHwOptionsUsePassphrase.setText(_translate("HwInitializeDlg", "Use passphrase"))
         self.lblHwOptionsPassphraseReadmeLink.setText(_translate("HwInitializeDlg", "(<a href=\"https://doc.satoshilabs.com/trezor-user/advanced_settings.html#using-passphrase-encrypted-seeds\">read this</a>)"))
         self.edtHwOptionsLedgerPassphrase.setToolTip(_translate("HwInitializeDlg", "<html><head/><body><p>This passphrase (if used) will be saved in your Ledger Nano S device and will be secured with the secondary PIN .</p></body></html>"))
@@ -587,7 +587,7 @@ class Ui_HwInitializeDlg(object):
         self.label.setText(_translate("HwInitializeDlg", "Passphrase:"))
         self.btnRefreshAddressesPreview.setText(_translate("HwInitializeDlg", "Apply and reload addresses"))
         self.edtHwOptionsBip32Path.setText(_translate("HwInitializeDlg", "44\'/5\'/0\'/0/0"))
-        self.label_5.setText(_translate("HwInitializeDlg", "Dash addresses which will be available in the device after finishing the process:"))
+        self.label_5.setText(_translate("HwInitializeDlg", "Polis addresses which will be available in the device after finishing the process:"))
         self.lblHwOptionsMessage1.setText(_translate("HwInitializeDlg", "Entropy:"))
         self.lblStepSummaryTitle.setText(_translate("HwInitializeDlg", "<h2>Operation successfully finished</h2>"))
         self.lblFirmwareSource.setText(_translate("HwInitializeDlg", "<b>Choose the source of firmware</b>"))
@@ -615,7 +615,7 @@ class Ui_HwInitializeDlg(object):
         item.setText(_translate("HwInitializeDlg", "URL"))
         item = self.tabFirmwareWebSources.horizontalHeaderItem(5)
         item.setText(_translate("HwInitializeDlg", "Fingerprint"))
-        self.label_2.setText(_translate("HwInitializeDlg", "<a href=\"https://github.com/Bertrand256/dash-masternode-tool/blob/master/doc/hw-initialization-recovery.md\">Read the documentation on GitHub</a>"))
+        self.label_2.setText(_translate("HwInitializeDlg", "<a href=\"https://github.com/Bertrand256/polis-masternode-tool/blob/master/doc/hw-initialization-recovery.md\">Read the documentation on GitHub</a>"))
         self.btnCancel.setText(_translate("HwInitializeDlg", "Cancel"))
         self.btnBack.setText(_translate("HwInitializeDlg", "Back"))
         self.btnNext.setText(_translate("HwInitializeDlg", "Continue"))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/blogin/Projects/dash-masternode-tool/src/ui/ui_masternode_details.ui'
+# Form implementation generated from reading ui file '/Users/blogin/Projects/polis-masternode-tool/src/ui/ui_masternode_details.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -309,7 +309,7 @@ class Ui_WdgMasternodeDetails(object):
         self.btnBip32PathToAddress.setToolTip(_translate("WdgMasternodeDetails", "Convert BIP32 path to address"))
         self.btnBip32PathToAddress.setText(_translate("WdgMasternodeDetails", "<<"))
         self.lblCollateralPath.setText(_translate("WdgMasternodeDetails", "path"))
-        self.btnShowCollateralPathAddress.setToolTip(_translate("WdgMasternodeDetails", "Show Dash address for the entered BIP32 path"))
+        self.btnShowCollateralPathAddress.setToolTip(_translate("WdgMasternodeDetails", "Show Polis address for the entered BIP32 path"))
         self.lblCollateralTxHash.setText(_translate("WdgMasternodeDetails", "Collateral TX hash"))
         self.lblCollateralTxIndex.setText(_translate("WdgMasternodeDetails", "index"))
         self.lblDMNTxHash.setText(_translate("WdgMasternodeDetails", "Protx hash"))

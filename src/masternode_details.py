@@ -10,7 +10,7 @@ from PyQt5.QtCore import QSize, pyqtSlot, Qt
 from PyQt5.QtGui import QPixmap, QTextDocument
 from PyQt5.QtWidgets import QDialog, QWidget, QLineEdit, QMessageBox, QAction, QApplication, QActionGroup
 
-import dash_utils
+import polis_utils
 import hw_intf
 from app_config import MasternodeConfig, DMN_ROLE_OWNER, DMN_ROLE_OPERATOR, DMN_ROLE_VOTING, InputKeyType
 from bip44_wallet import Bip44Wallet, BreakFetchTransactionsException
@@ -27,12 +27,12 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
     role_modified = QtCore.pyqtSignal()
     label_width_changed = QtCore.pyqtSignal(int)
 
-    def __init__(self, main_dlg, app_config, dashd_intf):
+    def __init__(self, main_dlg, app_config, polisd_intf):
         QWidget.__init__(self, main_dlg)
         ui_masternode_details.Ui_WdgMasternodeDetails.__init__(self)
         self.main_dlg = main_dlg
         self.app_config = app_config
-        self.dashd_intf = dashd_intf
+        self.polisd_intf = polisd_intf
         self.masternode: MasternodeConfig = None
         self.updating_ui = False
         self.edit_mode = False
@@ -52,7 +52,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
         self.act_view_as_owner_private_key = QAction('View as private key', self)
         self.act_view_as_owner_private_key.setData('privkey')
         self.act_view_as_owner_private_key.triggered.connect(self.on_owner_view_key_type_changed)
-        self.act_view_as_owner_public_address = QAction('View as Dash address', self)
+        self.act_view_as_owner_public_address = QAction('View as Polis address', self)
         self.act_view_as_owner_public_address.setData('address')
         self.act_view_as_owner_public_address.triggered.connect(self.on_owner_view_key_type_changed)
         self.act_view_as_owner_public_key = QAction('View as public key', self)
@@ -77,7 +77,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
         self.act_view_as_voting_private_key = QAction('View as private key', self)
         self.act_view_as_voting_private_key.setData('privkey')
         self.act_view_as_voting_private_key.triggered.connect(self.on_voting_view_key_type_changed)
-        self.act_view_as_voting_public_address = QAction('View as Dash address', self)
+        self.act_view_as_voting_public_address = QAction('View as Polis address', self)
         self.act_view_as_voting_public_address.setData('address')
         self.act_view_as_voting_public_address.triggered.connect(self.on_voting_view_key_type_changed)
         self.act_view_as_voting_public_key = QAction('View as public key', self)
@@ -285,7 +285,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
             if cur_key_type == 'privkey':
                 lbl = prefix + ' private key'
             elif cur_key_type == 'address':
-                lbl = prefix + ' Dash address'
+                lbl = prefix + ' Polis address'
             elif cur_key_type == 'pubkey':
                 lbl = prefix + ' public key'
             elif cur_key_type == 'pubkeyhash':
@@ -300,7 +300,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                 if not self.edit_mode and not self.act_view_as_owner_private_key.isChecked():
                     style = 'hl2'
             else:
-                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the owner Dash address')
+                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the owner Polis address')
                 if not self.edit_mode:
                     style = 'hl1' if self.act_view_as_owner_public_address.isChecked() else 'hl2'
             self.lblOwnerKey.setText(get_label_text('Owner', key_type, tooltip_anchor, self.ag_owner_key, style))
@@ -325,7 +325,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                 if not self.edit_mode and not self.act_view_as_voting_private_key.isChecked():
                     style = 'hl2'
             else:
-                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the voting Dash address')
+                key_type, tooltip_anchor, placeholder_text = ('address', 'privkey', 'Enter the voting Polis address')
                 if not self.edit_mode:
                     style = 'hl1' if self.act_view_as_voting_public_address.isChecked() else 'hl2'
             self.lblVotingKey.setText(get_label_text('Voting', key_type, tooltip_anchor, self.ag_voting_key, style))
@@ -401,14 +401,14 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                             ret = self.masternode.dmn_owner_private_key
                         elif self.act_view_as_owner_public_address.isChecked():
                             if self.masternode.dmn_owner_private_key:
-                                ret = dash_utils.wif_privkey_to_address(self.masternode.dmn_owner_private_key,
-                                                                        self.app_config.dash_network)
+                                ret = polis_utils.wif_privkey_to_address(self.masternode.dmn_owner_private_key,
+                                                                        self.app_config.polis_network)
                         elif self.act_view_as_owner_public_key.isChecked():
                             if self.masternode.dmn_owner_private_key:
-                                ret = dash_utils.wif_privkey_to_pubkey(self.masternode.dmn_owner_private_key)
+                                ret = polis_utils.wif_privkey_to_pubkey(self.masternode.dmn_owner_private_key)
                         elif self.act_view_as_owner_public_key_hash.isChecked():
                             if self.masternode.dmn_owner_private_key:
-                                pubkey = dash_utils.wif_privkey_to_pubkey(self.masternode.dmn_owner_private_key)
+                                pubkey = polis_utils.wif_privkey_to_pubkey(self.masternode.dmn_owner_private_key)
                                 pubkey_bin = bytes.fromhex(pubkey)
                                 pub_hash = bitcoin.bin_hash160(pubkey_bin)
                                 ret = pub_hash.hex()
@@ -444,14 +444,14 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                             ret = self.masternode.dmn_voting_private_key
                         elif self.act_view_as_voting_public_address.isChecked():
                             if self.masternode.dmn_voting_private_key:
-                                ret = dash_utils.wif_privkey_to_address(self.masternode.dmn_voting_private_key,
-                                                                        self.app_config.dash_network)
+                                ret = polis_utils.wif_privkey_to_address(self.masternode.dmn_voting_private_key,
+                                                                        self.app_config.polis_network)
                         elif self.act_view_as_voting_public_key.isChecked():
                             if self.masternode.dmn_voting_private_key:
-                                ret = dash_utils.wif_privkey_to_pubkey(self.masternode.dmn_voting_private_key)
+                                ret = polis_utils.wif_privkey_to_pubkey(self.masternode.dmn_voting_private_key)
                         elif self.act_view_as_voting_public_key_hash.isChecked():
                             if self.masternode.dmn_voting_private_key:
-                                pubkey = dash_utils.wif_privkey_to_pubkey(self.masternode.dmn_voting_private_key)
+                                pubkey = polis_utils.wif_privkey_to_pubkey(self.masternode.dmn_voting_private_key)
                                 pubkey_bin = bytes.fromhex(pubkey)
                                 pub_hash = bitcoin.bin_hash160(pubkey_bin)
                                 ret = pub_hash.hex()
@@ -545,7 +545,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
     @pyqtSlot(str)
     def on_lblOwnerKey_linkHovered(self, link):
         if link == 'address':
-            tt = 'Change input type to Dash address'
+            tt = 'Change input type to Polis address'
         else:
             tt = 'Change input type to private key'
         self.lblOwnerKey.setToolTip(tt)
@@ -561,7 +561,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
     @pyqtSlot(str)
     def on_lblVotingKey_linkHovered(self, link):
         if link == 'address':
-            tt = 'Change input type to Dash address'
+            tt = 'Change input type to Polis address'
         else:
             tt = 'Change input type to private key'
         self.lblVotingKey.setToolTip(tt)
@@ -723,7 +723,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                 return
 
             try:
-                txes = self.dashd_intf.protx('list', 'registered', True)
+                txes = self.polisd_intf.protx('list', 'registered', True)
                 for protx in txes:
                     state = protx.get('state')
                     if state:
@@ -810,9 +810,9 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                 return None
 
         if pk_type == 'operator':
-            pk = dash_utils.generate_bls_privkey()
+            pk = polis_utils.generate_bls_privkey()
         else:
-            pk = dash_utils.generate_wif_privkey(self.app_config.dash_network, compressed=compressed)
+            pk = polis_utils.generate_wif_privkey(self.app_config.polis_network, compressed=compressed)
         edit_control.setText(pk)
         return pk
 
@@ -888,7 +888,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
             self.set_modified()
 
         bip44_wallet = Bip44Wallet(self.app_config.hw_coin_name, self.main_dlg.hw_session,
-                                   self.app_config.db_intf, self.dashd_intf, self.app_config.dash_network)
+                                   self.app_config.db_intf, self.polisd_intf, self.app_config.polis_network)
 
         utxos = WndUtils.run_thread_dialog(
             self.get_collateral_tx_address_thread,
@@ -910,7 +910,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
                     apply_utxo(utxo)
         else:
             if utxos is not None:
-                WndUtils.warnMsg('Couldn\'t find any 1000 Dash UTXO in your wallet.')
+                WndUtils.warnMsg('Couldn\'t find any 1000 Polis UTXO in your wallet.')
 
     def get_collateral_tx_address_thread(self, ctrl: CtrlObject,
                                          bip44_wallet: Bip44Wallet,
@@ -919,7 +919,7 @@ class WdgMasternodeDetails(QWidget, ui_masternode_details.Ui_WdgMasternodeDetail
         utxos = []
         break_scanning = False
         txes_cnt = 0
-        msg = 'Scanning wallet transactions for 1000 Dash UTXOs.<br>' \
+        msg = 'Scanning wallet transactions for 1000 Polis UTXOs.<br>' \
               'This may take a while (<a href="break">break</a>)....'
         ctrl.dlg_config_fun(dlg_title="Scanning wallet", show_progress_bar=False)
         ctrl.display_msg_fun(msg)

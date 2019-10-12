@@ -21,7 +21,7 @@ from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QDialog, QMenu, QApplication, QLineEdit, QShortcut, QMessageBox, QTableWidgetItem
 import app_cache
 import app_defs
-from dash_utils import pubkey_to_address
+from polis_utils import pubkey_to_address
 from thread_fun_dlg import CtrlObject
 from ui import ui_initialize_hw_dlg
 from doc_dlg import show_doc_dlg
@@ -99,7 +99,7 @@ class HwInitializeDlg(QDialog, ui_initialize_hw_dlg.Ui_HwInitializeDlg, WndUtils
         self.viewMnemonic.verticalHeader().setDefaultSectionSize(
             self.viewMnemonic.verticalHeader().fontMetrics().height() + 6)
         self.set_word_count(self.word_count)
-        self.edtHwOptionsBip32Path.setText(dash_utils.get_default_bip32_path(self.app_config.dash_network))
+        self.edtHwOptionsBip32Path.setText(polis_utils.get_default_bip32_path(self.app_config.polis_network))
 
         self.tabFirmwareWebSources.verticalHeader().setDefaultSectionSize(
             self.tabFirmwareWebSources.verticalHeader().fontMetrics().height() + 3)
@@ -1052,7 +1052,7 @@ class HwInitializeDlg(QDialog, ui_initialize_hw_dlg.Ui_HwInitializeDlg, WndUtils
             mnem_str = ' '.join(self.get_cur_mnemonic_words())
             bip32_seed = self.mnemonic.to_seed(mnem_str, passphrase)
             bip32_master_key = bitcoin.bip32_master_key(bip32_seed)
-            bip32_path_n = dash_utils.bip32_path_string_to_n(bip32_path)
+            bip32_path_n = polis_utils.bip32_path_string_to_n(bip32_path)
             if len(bip32_path_n) > 0:
                 last_idx = bip32_path_n[-1]
                 addresses = []
@@ -1060,7 +1060,7 @@ class HwInitializeDlg(QDialog, ui_initialize_hw_dlg.Ui_HwInitializeDlg, WndUtils
                     bip32_path_n[-1] = last_idx + idx
                     pk = self.get_bip32_private_key(bip32_path_n, bip32_master_key)
                     pubkey = bitcoin.privkey_to_pubkey(pk)
-                    addr = pubkey_to_address(pubkey, self.app_config.dash_network)
+                    addr = pubkey_to_address(pubkey, self.app_config.polis_network)
                     path_str = bip32_path_n_to_string(bip32_path_n)
                     addresses.append((path_str, addr))
                 self.address_preview_model.apply_addresses(addresses)
@@ -1493,7 +1493,7 @@ class PreviewAddressesModel(QAbstractTableModel):
             "Path",
             'Address'
         ]
-        self.addresses = []  # list of tuples: bip32 path, dash address
+        self.addresses = []  # list of tuples: bip32 path, polis address
 
     def refresh_view(self):
         self.beginResetModel()

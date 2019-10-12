@@ -1,5 +1,5 @@
 """
-Copy of https://github.com/dashpay/sentinel/blob/master/lib/base58.py
+Copy of https://github.com/polispay/sentinel/blob/master/lib/base58.py
 Bitcoin base58 encoding and decoding.
 
 Based on https://bitcointalk.org/index.php?topic=1026.0 (public domain)

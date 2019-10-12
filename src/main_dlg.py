@@ -35,7 +35,7 @@ from config_dlg import ConfigDlg
 from find_coll_tx_dlg import ListCollateralTxsDlg
 import about_dlg
 import app_cache
-import dash_utils
+import polis_utils
 import hw_pass_dlg
 import hw_pin_dlg
 import wallet_dlg
@@ -45,8 +45,8 @@ from masternode_details import WdgMasternodeDetails
 from proposals_dlg import ProposalsDlg
 from app_config import AppConfig, MasternodeConfig, APP_NAME_SHORT, DMN_ROLE_OWNER, DMN_ROLE_OPERATOR, InputKeyType
 from app_defs import PROJECT_URL, HWType, get_note_url
-from dash_utils import bip32_path_n_to_string
-from dashd_intf import DashdInterface, DashdIndexException
+from polis_utils import bip32_path_n_to_string
+from polisd_intf import PolisdInterface, PolisdIndexException
 from hw_common import HardwareWalletPinException, HwSessionInfo
 import hw_intf
 from hw_setup_dlg import HwSetupDlg
@@ -58,7 +58,7 @@ from ui import ui_main_dlg
 
 class DispMessage(object):
     NEW_VERSION = 1
-    DASH_NET_CONNECTION = 2
+    POLIS_NET_CONNECTION = 2
 
     def __init__(self, message: str, type: str):
         """
@@ -86,7 +86,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         self.app_config.sig_display_message.connect(self.add_app_message)
         WndUtils.set_app_config(self, self.app_config)
 
-        self.dashd_intf = DashdInterface(window=None,
+        self.polisd_intf = PolisdInterface(window=None,
                                          on_connection_initiated_callback=self.show_connection_initiated,
                                          on_connection_failed_callback=self.show_connection_failed,
                                          on_connection_successful_callback=self.show_connection_successful,
@@ -96,12 +96,12 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             self.connect_hardware_wallet,
             self.disconnect_hardware_wallet,
             self.app_config,
-            dashd_intf=self.dashd_intf)
+            polisd_intf=self.polisd_intf)
 
-        self.dashd_info = {}
-        self.is_dashd_syncing = False
-        self.dashd_connection_ok = False
-        self.connecting_to_dashd = False
+        self.polisd_info = {}
+        self.is_polisd_syncing = False
+        self.polisd_connection_ok = False
+        self.connecting_to_polisd = False
         self.cur_masternode: MasternodeConfig = None
         self.editing_enabled = False
         self.recent_config_files = []
@@ -122,7 +122,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         SshPassCache.set_parent_window(self)
         app_cache.restore_window_size(self)
         self.inside_setup_ui = True
-        self.dashd_intf.window = self
+        self.polisd_intf.window = self
         self.closeEvent = self.closeEvent
         self.lblStatus1 = QtWidgets.QLabel(self)
         self.lblStatus1.setAutoFillBackground(False)
@@ -186,7 +186,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         # add masternodes' info to the combobox
         self.cur_masternode = None
 
-        self.wdg_masternode = WdgMasternodeDetails(self, self.app_config, self.dashd_intf)
+        self.wdg_masternode = WdgMasternodeDetails(self, self.app_config, self.polisd_intf)
         l = self.frmMasternodeDetails.layout()
         l.insertWidget(0, self.wdg_masternode)
         self.wdg_masternode.name_modified.connect(self.on_mn_name_modified)
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         except Exception as e:
             raise
         self.display_window_title()
-        self.dashd_intf.initialize(self.app_config)
+        self.polisd_intf.initialize(self.app_config)
 
         self.update_edit_controls_state()
 
@@ -224,8 +224,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
     def closeEvent(self, event):
         app_cache.save_window_size(self)
         self.finishing = True
-        if self.dashd_intf:
-            self.dashd_intf.disconnect()
+        if self.polisd_intf:
+            self.polisd_intf.disconnect()
 
         if self.app_config.is_modified():
             if self.queryDlg('Configuration modified. Save?',
@@ -288,18 +288,18 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
         try:
             self.disconnect_hardware_wallet()
-            dash_network_sav = self.app_config.dash_network
+            polis_network_sav = self.app_config.polis_network
             self.app_config.read_from_file(hw_session=self.hw_session, file_name=file_name,
                                            update_current_file_name=update_current_file_name)
             self.editing_enabled = False
             self.configuration_to_ui()
-            self.dashd_intf.reload_configuration()
+            self.polisd_intf.reload_configuration()
             self.app_config.modified = False
             file_name = self.app_config.app_config_file_name
             if file_name:
                 self.add_item_to_config_files_mru_list(file_name)
                 self.update_config_files_mru_menu_items()
-                if dash_network_sav != self.app_config.dash_network:
+                if polis_network_sav != self.app_config.polis_network:
                     self.disconnect_hardware_wallet()
                     self.app_config.reset_network_dependent_dyn_params()
             self.display_window_title()
@@ -353,7 +353,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         """
         app_version_part = ' (v' + self.app_config.app_version + ')' if self.app_config.app_version else ''
 
-        if self.app_config.dash_network == 'TESTNET':
+        if self.app_config.polis_network == 'TESTNET':
             testnet_part = ' [TESTNET]'
         else:
             testnet_part = ''
@@ -550,15 +550,15 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
     def get_project_config_params_thread(self, ctrl, force_check):
         """
         Thread function checking whether there is a new version of the application on Github page.
-        :param ctrl: thread control structure (not used here) 
-        :param cur_date_str: Current date string - it will be saved in the cache file as the date of the 
+        :param ctrl: thread control structure (not used here)
+        :param cur_date_str: Current date string - it will be saved in the cache file as the date of the
             last-version-check date.
         :param force_check: True if version-check has been invoked by the user, not the app itself.
         :return: None
         """
         try:
             response = urllib.request.urlopen(
-                'https://raw.githubusercontent.com/Bertrand256/dash-masternode-tool/master/app-params.json',
+                'https://raw.githubusercontent.com/Bertrand256/polis-masternode-tool/master/app-params.json',
                 context=ssl._create_unverified_context())
             contents = response.read()
 
@@ -618,14 +618,14 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
     @pyqtSlot(bool)
     def on_action_open_settings_window_triggered(self):
-        dash_network_sav = self.app_config.dash_network
+        polis_network_sav = self.app_config.polis_network
         hw_type_sav = self.app_config.hw_type
         dlg = ConfigDlg(self, self.app_config)
         res = dlg.exec_()
         if res and dlg.get_is_modified():
             self.app_config.configure_cache()
-            self.dashd_intf.reload_configuration()
-            if dash_network_sav != self.app_config.dash_network or hw_type_sav != self.app_config.hw_type:
+            self.polisd_intf.reload_configuration()
+            if polis_network_sav != self.app_config.polis_network or hw_type_sav != self.app_config.hw_type:
                 self.disconnect_hardware_wallet()
                 self.app_config.reset_network_dependent_dyn_params()
             self.display_window_title()
@@ -638,25 +638,25 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         ui.exec_()
 
     def show_connection_initiated(self):
-        """Shows status information related to a initiated process of connection to a dash RPC. """
-        self.set_status_text1('<b>RPC network status:</b> trying %s...' % self.dashd_intf.get_active_conn_description(), 'black')
+        """Shows status information related to a initiated process of connection to a polis RPC. """
+        self.set_status_text1('<b>RPC network status:</b> trying %s...' % self.polisd_intf.get_active_conn_description(), 'black')
 
     def show_connection_failed(self):
         """Shows status information related to a failed connection attempt. There can be more attempts to connect
         to another nodes if there are such in configuration."""
-        self.set_status_text1('<b>RPC network status:</b> failed connection to %s' % self.dashd_intf.get_active_conn_description(), 'red')
+        self.set_status_text1('<b>RPC network status:</b> failed connection to %s' % self.polisd_intf.get_active_conn_description(), 'red')
 
     def show_connection_successful(self):
-        """Shows status information after successful connetion to a Dash RPC node."""
-        self.set_status_text1('<b>RPC network status:</b> OK (%s)' % self.dashd_intf.get_active_conn_description(), 'green')
+        """Shows status information after successful connetion to a Polis RPC node."""
+        self.set_status_text1('<b>RPC network status:</b> OK (%s)' % self.polisd_intf.get_active_conn_description(), 'green')
 
     def show_connection_disconnected(self):
-        """Shows status message related to disconnection from Dash RPC node."""
+        """Shows status message related to disconnection from Polis RPC node."""
         self.set_status_text1('<b>RPC network status:</b> not connected', 'black')
 
-    def connect_dash_network(self, wait_for_check_finish=False, call_on_check_finished=None):
+    def connect_polis_network(self, wait_for_check_finish=False, call_on_check_finished=None):
         """
-        Connects do dash daemon if not connected before and returnes if it was successful.
+        Connects do polis daemon if not connected before and returnes if it was successful.
         :param wait_for_check_finish: True if function is supposed to wait until connection check is finished (process
             is executed in background)
         :param call_on_check_finished: ref to function to be called after connection test (successful or unsuccessful)
@@ -672,7 +672,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
         def wait_for_synch_finished_thread(ctrl):
             """
-            Thread waiting for dash daemon to finish synchronizing.
+            Thread waiting for polis daemon to finish synchronizing.
             """
             mtx = QMutex()
             cond = QWaitCondition()
@@ -680,53 +680,53 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 logging.info('wait_for_synch_finished_thread')
                 mtx.lock()
                 while not ctrl.finish:
-                    synced = self.dashd_intf.issynchronized()
+                    synced = self.polisd_intf.issynchronized()
                     if synced:
-                        self.is_dashd_syncing = False
+                        self.is_polisd_syncing = False
                         self.show_connection_successful()
                         break
-                    mnsync = self.dashd_intf.mnsync()
+                    mnsync = self.polisd_intf.mnsync()
                     self.add_app_message(
-                        DispMessage.DASH_NET_CONNECTION,
-                        'Dashd is synchronizing: AssetID: %s, AssetName: %s' %
+                        DispMessage.POLIS_NET_CONNECTION,
+                        'Polisd is synchronizing: AssetID: %s, AssetName: %s' %
                         (str(mnsync.get('AssetID', '')), str(mnsync.get('AssetName', ''))), 'warn')
                     cond.wait(mtx, 5000)
-                self.del_app_message(DispMessage.DASH_NET_CONNECTION)
+                self.del_app_message(DispMessage.POLIS_NET_CONNECTION)
             except Exception as e:
-                self.is_dashd_syncing = False
-                self.dashd_connection_ok = False
-                self.add_app_message(DispMessage.DASH_NET_CONNECTION, str(e), 'error')
+                self.is_polisd_syncing = False
+                self.polisd_connection_ok = False
+                self.add_app_message(DispMessage.POLIS_NET_CONNECTION, str(e), 'error')
             finally:
                 mtx.unlock()
-                self.wait_for_dashd_synced_thread = None
+                self.wait_for_polisd_synced_thread = None
 
         def connect_thread(ctrl):
             """
-            Test connection to dash network inside a thread to avoid blocking GUI.
+            Test connection to polis network inside a thread to avoid blocking GUI.
             :param ctrl: control structure to communicate with WorkerThread object (not used here)
             """
             try:
-                synced = self.dashd_intf.issynchronized()
-                self.dashd_info = self.dashd_intf.getinfo(verify_node=True)
-                self.dashd_connection_ok = True
+                synced = self.polisd_intf.issynchronized()
+                self.polisd_info = self.polisd_intf.getinfo(verify_node=True)
+                self.polisd_connection_ok = True
                 if not synced:
-                    logging.info("dashd not synced")
-                    if not self.is_dashd_syncing and not (hasattr(self, 'wait_for_dashd_synced_thread') and
-                                                                  self.wait_for_dashd_synced_thread is not None):
-                        self.is_dashd_syncing = True
-                        self.wait_for_dashd_synced_thread = self.run_thread(self, wait_for_synch_finished_thread, (),
+                    logging.info("polisd not synced")
+                    if not self.is_polisd_syncing and not (hasattr(self, 'wait_for_polisd_synced_thread') and
+                                                                  self.wait_for_polisd_synced_thread is not None):
+                        self.is_polisd_syncing = True
+                        self.wait_for_polisd_synced_thread = self.run_thread(self, wait_for_synch_finished_thread, (),
                                                                             on_thread_finish=connect_finished)
                 else:
-                    self.is_dashd_syncing = False
-                self.del_app_message(DispMessage.DASH_NET_CONNECTION)
+                    self.is_polisd_syncing = False
+                self.del_app_message(DispMessage.POLIS_NET_CONNECTION)
             except Exception as e:
                 err = str(e)
                 if not err:
                     err = 'Connect error: %s' % type(e).__name__
-                self.is_dashd_syncing = False
-                self.dashd_connection_ok = False
+                self.is_polisd_syncing = False
+                self.polisd_connection_ok = False
                 self.show_connection_failed()
-                self.add_app_message(DispMessage.DASH_NET_CONNECTION, err, 'error')
+                self.add_app_message(DispMessage.POLIS_NET_CONNECTION, err, 'error')
 
         def connect_finished():
             """
@@ -734,8 +734,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             """
             del self.check_conn_thread
             self.check_conn_thread = None
-            self.connecting_to_dashd = False
-            self.app_config.read_dash_network_app_params(self.dashd_intf)
+            self.connecting_to_polisd = False
+            self.app_config.read_polis_network_app_params(self.polisd_intf)
             if call_on_check_finished:
                 call_on_check_finished()
             if event_loop:
@@ -744,12 +744,12 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         if self.app_config.is_config_complete():
             if not hasattr(self, 'check_conn_thread') or self.check_conn_thread is None:
 
-                if hasattr(self, 'wait_for_dashd_synced_thread') and self.wait_for_dashd_synced_thread is not None:
+                if hasattr(self, 'wait_for_polisd_synced_thread') and self.wait_for_polisd_synced_thread is not None:
                     if call_on_check_finished is not None:
-                        # if a thread waiting for dashd to finish synchronizing is running, call the callback function
+                        # if a thread waiting for polisd to finish synchronizing is running, call the callback function
                         call_on_check_finished()
                 else:
-                    self.connecting_to_dashd = True
+                    self.connecting_to_polisd = True
                     self.check_conn_thread = self.run_thread(self, connect_thread, (),
                                                              on_thread_finish=connect_finished)
                     if wait_for_check_finish:
@@ -757,14 +757,14 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         else:
             # configuration is not complete
             logging.warning("config not complete")
-            self.is_dashd_syncing = False
-            self.dashd_connection_ok = False
+            self.is_polisd_syncing = False
+            self.polisd_connection_ok = False
 
     @pyqtSlot(bool)
     def on_action_check_network_connection_triggered(self):
-        self.test_dash_network_connection()
+        self.test_polis_network_connection()
 
-    def test_dash_network_connection(self):
+    def test_polis_network_connection(self):
         def connection_test_finished():
 
             self.action_check_network_connection.setEnabled(True)
@@ -773,15 +773,15 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             self.btnRefreshMnStatus.setEnabled(True)
             self.action_transfer_funds_for_any_address.setEnabled(True)
 
-            if self.dashd_connection_ok:
+            if self.polisd_connection_ok:
                 self.show_connection_successful()
-                if self.is_dashd_syncing:
-                    self.infoMsg('Connection successful, but Dash daemon is synchronizing.')
+                if self.is_polisd_syncing:
+                    self.infoMsg('Connection successful, but Polis daemon is synchronizing.')
                 else:
                     self.infoMsg('Connection successful.')
             else:
-                if self.dashd_intf.last_error_message:
-                    self.errorMsg('Connection error: ' + self.dashd_intf.last_error_message)
+                if self.polisd_intf.last_error_message:
+                    self.errorMsg('Connection error: ' + self.polisd_intf.last_error_message)
                 else:
                     self.errorMsg('Connection error')
 
@@ -791,7 +791,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             self.btnUpdMnPayoutAddr.setEnabled(False)
             self.btnRefreshMnStatus.setEnabled(False)
             self.action_transfer_funds_for_any_address.setEnabled(False)
-            self.connect_dash_network(call_on_check_finished=connection_test_finished)
+            self.connect_polis_network(call_on_check_finished=connection_test_finished)
         else:
             # configuration not complete: show config window
             self.errorMsg("There are no (enabled) connections to an RPC node in your configuration.")
@@ -853,7 +853,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
     def add_app_message(self, msg_id: int, text: str, type: str):
         """
         Display message in the app message area.
-        :param text: Text to be displayed. If Text is empty, message area will be hidden. 
+        :param text: Text to be displayed. If Text is empty, message area will be hidden.
         :param color: Color of thext.
         """
         def set_message(msg_id: int, text, type):
@@ -921,29 +921,29 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                                         passphrase_encoding=self.app_config.hw_keepkey_psw_encoding,
                                                         hw_type=self.app_config.hw_type)
 
-                    if self.app_config.dash_network == 'TESTNET':
-                        # check if Dash testnet is supported by this hardware wallet
+                    if self.app_config.polis_network == 'TESTNET':
+                        # check if Polis testnet is supported by this hardware wallet
                         found_testnet_support = False
                         if self.app_config.hw_type in (HWType.trezor, HWType.keepkey):
                             try:
-                                path = dash_utils.get_default_bip32_base_path(self.app_config.dash_network)
+                                path = polis_utils.get_default_bip32_base_path(self.app_config.polis_network)
                                 path += "/0'/0/0"
-                                path_n = dash_utils.bip32_path_string_to_n(path)
+                                path_n = polis_utils.bip32_path_string_to_n(path)
                                 addr = hw_intf.get_address(self.hw_session, path_n, False)
-                                if addr and dash_utils.validate_address(addr, self.app_config.dash_network):
+                                if addr and polis_utils.validate_address(addr, self.app_config.polis_network):
                                     found_testnet_support = True
                             except Exception as e:
                                 if str(e).find('Invalid coin name') < 0:
-                                    logging.exception('Failed when looking for Dash testnet support')
+                                    logging.exception('Failed when looking for Polis testnet support')
                         elif self.app_config.hw_type == HWType.ledger_nano_s:
                             addr = hw_intf.get_address(self.hw_session,
-                                                       dash_utils.get_default_bip32_path(self.app_config.dash_network))
-                            if dash_utils.validate_address(addr, self.app_config.dash_network):
+                                                       polis_utils.get_default_bip32_path(self.app_config.polis_network))
+                            if polis_utils.validate_address(addr, self.app_config.polis_network):
                                 found_testnet_support = False
 
                         if not found_testnet_support:
-                            url = get_note_url('DMT0002')
-                            msg = f'Your hardware wallet device does not support Dash TESTNET ' \
+                            url = get_note_url('PMT0002')
+                            msg = f'Your hardware wallet device does not support Polis TESTNET ' \
                                   f'(<a href="{url}">see details</a>).'
                             self.errorMsg(msg)
                             try:
@@ -1106,8 +1106,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 try:
                     with open(file_name, 'r') as f_ptr:
                         bip44_wallet = Bip44Wallet(self.app_config.hw_coin_name, self.hw_session,
-                                                   self.app_config.db_intf, self.dashd_intf,
-                                                   self.app_config.dash_network)
+                                                   self.app_config.db_intf, self.polisd_intf,
+                                                   self.app_config.polis_network)
 
                         modified = False
                         imported_cnt = 0
@@ -1124,9 +1124,9 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                 mn_privkey = elems[2]
                                 mn_tx_hash = elems[3]
                                 mn_tx_idx = elems[4]
-                                mn_dash_addr = ''
+                                mn_polis_addr = ''
                                 if len(elems) > 5:
-                                    mn_dash_addr = elems[5]
+                                    mn_polis_addr = elems[5]
 
                                 def update_mn(in_mn):
                                     in_mn.name = mn_name
@@ -1136,8 +1136,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                         in_mn.port = ipelems[1]
                                     else:
                                         in_mn.ip = mn_ipport
-                                        in_mn.port = '9999'
-                                    in_mn.collateralAddress = mn_dash_addr
+                                        in_mn.port = '24126'
+                                    in_mn.collateralAddress = mn_polis_addr
                                     in_mn.collateralTx = mn_tx_hash
                                     in_mn.collateralTxIndex = mn_tx_idx
                                     in_mn.collateralBip32Path = ''
@@ -1188,8 +1188,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
                             if self.queryDlg(message=msg_text, buttons=QMessageBox.Yes | QMessageBox.No,
                                              default_button=QMessageBox.Yes) == QMessageBox.Yes:
-                                # scan all Dash addresses from imported masternodes for BIP32 path, starting from
-                                # first standard Dash BIP32 path
+                                # scan all Polis addresses from imported masternodes for BIP32 path, starting from
+                                # first standard Polis BIP32 path
                                 if not self.connect_hardware_wallet():
                                     return
 
@@ -1395,7 +1395,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
         if masternode.dmn_tx_hash:
             try:
-                protx = self.dashd_intf.protx('info', masternode.dmn_tx_hash)
+                protx = self.polisd_intf.protx('info', masternode.dmn_tx_hash)
                 if protx:
                     protx_state = protx.get('state')
             except Exception as e:
@@ -1404,7 +1404,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             if not protx:
                 try:
                     # protx transaction is not confirmed yet, so look for it in the mempool
-                    tx = self.dashd_intf.getrawtransaction(masternode.dmn_tx_hash, 1, skip_cache=True)
+                    tx = self.polisd_intf.getrawtransaction(masternode.dmn_tx_hash, 1, skip_cache=True)
                     confirmations = tx.get('confirmations', 0)
                     if confirmations < 3:
                         # in this case dmn tx should have been found by the 'protx info' call above;
@@ -1432,7 +1432,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 (protx.get('collateralHash') == masternode.collateralTx and
                 str(protx.get('collateralIndex')) == str(masternode.collateralTxIndex)))):
             try:
-                txes = self.dashd_intf.protx('list', 'registered', True)
+                txes = self.polisd_intf.protx('list', 'registered', True)
                 for protx in txes:
                     protx_state = protx.get('state')
                     if (protx_state and ((protx_state.get('service') == masternode.ip + ':' + masternode.port) or
@@ -1449,7 +1449,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         """
         Get current masternode's extended status.
         """
-        if self.dashd_connection_ok:
+        if self.polisd_connection_ok:
             if masternode.collateralTx and str(masternode.collateralTxIndex):
                 collateral_id = masternode.collateralTx + '-' + masternode.collateralTxIndex
             else:
@@ -1463,14 +1463,14 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 if not masternode.collateralTx:
                     return '<span style="color:red">Enter the collateral TX hash + index or IP + port</span>'
 
-            self.dashd_intf.get_masternodelist('json', data_max_age=30)  # read new data from the network
+            self.polisd_intf.get_masternodelist('json', data_max_age=30)  # read new data from the network
                                                                          # every 30 seconds
             if collateral_id:
-                mn_info = self.dashd_intf.masternodes_by_ident.get(collateral_id)
+                mn_info = self.polisd_intf.masternodes_by_ident.get(collateral_id)
             else:
-                mn_info = self.dashd_intf.masternodes_by_ip_port.get(ip_port)
+                mn_info = self.polisd_intf.masternodes_by_ip_port.get(ip_port)
 
-            block_height = self.dashd_intf.getblockcount()
+            block_height = self.polisd_intf.getblockcount()
             dmn_tx = self.get_deterministic_tx(masternode)
             if dmn_tx:
                 dmn_tx_state = dmn_tx.get('state')
@@ -1570,7 +1570,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                     if masternode.dmn_user_roles & DMN_ROLE_OWNER:
 
                         # check outputs of the collateral transaction
-                        tx_json = self.dashd_intf.getrawtransaction(masternode.collateralTx, 1)
+                        tx_json = self.polisd_intf.getrawtransaction(masternode.collateralTx, 1)
                         if tx_json:
                             vout = tx_json.get('vout')
                             if vout and int(masternode.collateralTxIndex) < len(vout):
@@ -1605,21 +1605,21 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
                     if dmn_tx_state:
                         owner_address_network = dmn_tx_state.get('ownerAddress')
-                        owner_address_cfg = masternode.get_dmn_owner_public_address(self.app_config.dash_network)
+                        owner_address_cfg = masternode.get_dmn_owner_public_address(self.app_config.polis_network)
                         if owner_address_network and owner_address_cfg and owner_address_network != owner_address_cfg:
                             owner_public_address_mismatch = True
                             logging.warning(
                                 f'The owner public address mismatch for masternode: {masternode.name}, '
-                                f'address from the app configuration: {owner_address_cfg}, address from the Dash '
+                                f'address from the app configuration: {owner_address_cfg}, address from the Polis '
                                 f'network: {owner_address_network}')
 
                         voting_address_network = dmn_tx_state.get('votingAddress')
-                        voting_address_cfg = masternode.get_dmn_voting_public_address(self.app_config.dash_network)
+                        voting_address_cfg = masternode.get_dmn_voting_public_address(self.app_config.polis_network)
                         if voting_address_network and voting_address_cfg and voting_address_network != voting_address_cfg:
                             voting_public_address_mismatch = True
                             logging.warning(
                                 f'The voting public address mismatch for masternode: {masternode.name}. '
-                                f'address from the app configuration: {voting_address_cfg}, address from the Dash '
+                                f'address from the app configuration: {voting_address_cfg}, address from the Polis '
                                 f'network: {voting_address_network}')
 
                         if not no_operator_pub_key:
@@ -1630,7 +1630,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                 operator_pubkey_mismatch = True
                                 logging.warning(
                                     f'The operator public key mismatch for masternode: {masternode.name}. '
-                                    f'pubkey from the app configuration: {operator_pubkey_cfg}, pubkey from the Dash '
+                                    f'pubkey from the app configuration: {operator_pubkey_cfg}, pubkey from the Polis '
                                     f'network: {operator_pubkey_network}')
 
                 if mn_data_modified:
@@ -1655,7 +1655,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
                     try:
                         if collateral_address:
-                            collateral_bal = self.dashd_intf.getaddressbalance([collateral_address])
+                            collateral_bal = self.polisd_intf.getaddressbalance([collateral_address])
                             collateral_bal = round(collateral_bal.get('balance') / 1e8, 5)
 
                             if collateral_address == payout_address:
@@ -1666,7 +1666,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                             f'{app_utils.to_string(collateral_bal)}</td><td></td></tr>'
 
                         if collateral_address != payout_address and payout_address:
-                            payout_bal = self.dashd_intf.getaddressbalance([payout_address])
+                            payout_bal = self.polisd_intf.getaddressbalance([payout_address])
                             payout_bal = round(payout_bal.get('balance') / 1e8, 5)
                             balance_entry += f'<tr><td class="title">Payout addr. balance:</td><td class="value" ' \
                                 f'colspan="2">{app_utils.to_string(payout_bal)}</td></tr>'
@@ -1691,8 +1691,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                         else:
                             paid_block = dmn_tx_state.get('lastPaidHeight')
                             if paid_block:
-                                bh = self.dashd_intf.getblockhash(paid_block)
-                                blk = self.dashd_intf.getblockheader(bh, 1)
+                                bh = self.polisd_intf.getblockhash(paid_block)
+                                blk = self.polisd_intf.getblockheader(bh, 1)
                                 lastpaid_ts = blk.get('time')
 
                         if lastpaid_ts:
@@ -1735,7 +1735,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                     if dmn_tx and not dmn_tx.get('confirmations'):
                         warnings.append('<td class="warning" colspan="2">ProRegTx not yet confirmed</td>')
                     else:
-                        if self.dashd_intf.is_protx_update_pending(self.cur_masternode.dmn_tx_hash):
+                        if self.polisd_intf.is_protx_update_pending(self.cur_masternode.dmn_tx_hash):
                             warnings.append('<td class="warning" colspan="2">The related protx update transaction '
                                             'is awaiting confirmations</td>')
                             skip_data_mismatch = True
@@ -1749,11 +1749,11 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                         errors.append('<td class="error" colspan="2">Masternode IP and&frasl;or TCP port number '
                                       'missing&frasl;mismatch</td>')
                     if owner_public_address_mismatch and not skip_data_mismatch:
-                        errors.append('<td class="error" colspan="2">Owner Dash address mismatch</td>')
+                        errors.append('<td class="error" colspan="2">Owner Polis address mismatch</td>')
                     if operator_pubkey_mismatch and not skip_data_mismatch:
                         errors.append('<td class="error" colspan="2">Operator public key mismatch</td>')
                     if voting_public_address_mismatch and not skip_data_mismatch:
-                        errors.append('<td class="error" colspan="2">Voting Dash address mismatch</td>')
+                        errors.append('<td class="error" colspan="2">Voting Polis address mismatch</td>')
                     if not dmn_tx:
                         warnings.append('<td class="warning" colspan="2">Couldn\'d read protx info for this masternode'
                                         ' (look into the logfile for details)</td>')
@@ -1799,7 +1799,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
             else:
                 status = '<span style="color:red">Masternode not found.</span>'
         else:
-            status = '<span style="color:red">Problem with connection to dashd.</span>'
+            status = '<span style="color:red">Problem with connection to polisd.</span>'
 
         if not self.finishing:
             if masternode != self.cur_masternode:
@@ -1828,8 +1828,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         self.btnUpdMnService.setEnabled(False)
         self.btnRevokeMn.setEnabled(False)
 
-        self.connect_dash_network(wait_for_check_finish=True)
-        if self.dashd_connection_ok:
+        self.connect_polis_network(wait_for_check_finish=True)
+        if self.polisd_connection_ok:
             try:
                 self.run_thread(self, self.get_masternode_status_description_thread, (self.cur_masternode,),
                                 on_thread_finish=enable_buttons, on_thread_exception=on_get_status_exception)
@@ -1839,12 +1839,12 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
         else:
             enable_buttons()
             self.lblMnStatus.setText('')
-            self.errorMsg('Dash daemon not connected')
+            self.errorMsg('Polis daemon not connected')
 
     @pyqtSlot(bool)
     def on_action_transfer_funds_for_cur_mn_triggered(self):
         """
-        Shows tranfser funds window with utxos related to current masternode. 
+        Shows tranfser funds window with utxos related to current masternode.
         """
         if self.cur_masternode:
             src_addresses = []
@@ -1852,7 +1852,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 self.errorMsg("Enter the masternode collateral BIP32 path. You can use the 'right arrow' button "
                               "on the right of the 'Collateral' edit box.")
             elif not self.cur_masternode.collateralAddress:
-                self.errorMsg("Enter the masternode collateral Dash address. You can use the 'left arrow' "
+                self.errorMsg("Enter the masternode collateral Polis address. You can use the 'left arrow' "
                               "button on the left of the 'BIP32 path' edit box.")
             else:
                 src_addresses.append((self.cur_masternode.collateralAddress, self.cur_masternode.collateralBip32Path))
@@ -1864,7 +1864,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
     @pyqtSlot(bool)
     def on_action_transfer_funds_for_all_mns_triggered(self):
         """
-        Shows tranfser funds window with utxos related to all masternodes. 
+        Shows tranfser funds window with utxos related to all masternodes.
         """
         self.show_wallet_window(None)
 
@@ -1887,8 +1887,8 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
           if the value is -1, show utxo for all masternodes
           if the value is None, show the default utxo source type
         """
-        if not self.dashd_intf.open():
-            self.errorMsg('Dash daemon not connected')
+        if not self.polisd_intf.open():
+            self.errorMsg('Polis daemon not connected')
         else:
             ui = wallet_dlg.WalletDlg(self, initial_mn_sel=initial_mn)
             ui.exec_()
@@ -1951,7 +1951,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
     @pyqtSlot(bool)
     def on_action_open_proposals_window_triggered(self):
-        ui = ProposalsDlg(self, self.dashd_intf)
+        ui = ProposalsDlg(self, self.polisd_intf)
         ui.exec_()
 
     @pyqtSlot(bool)
@@ -2015,7 +2015,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 logging.exception(str(e))
 
         if self.cur_masternode:
-            reg_dlg = reg_masternode_dlg.RegMasternodeDlg(self, self.app_config, self.dashd_intf, self.cur_masternode,
+            reg_dlg = reg_masternode_dlg.RegMasternodeDlg(self, self.app_config, self.polisd_intf, self.cur_masternode,
                                                           on_proregtx_success_callback=on_proregtx_finished)
             reg_dlg.exec_()
         else:
@@ -2035,7 +2035,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
         if self.cur_masternode:
             upd_dlg = upd_mn_registrar_dlg.UpdMnRegistrarDlg(
-                self, self.app_config, self.dashd_intf, self.cur_masternode,
+                self, self.app_config, self.polisd_intf, self.cur_masternode,
                 on_upd_success_callback=on_updtx_finished, show_upd_payout=show_upd_payout,
                 show_upd_operator=show_upd_operator, show_upd_voting=show_upd_voting)
             upd_dlg.exec_()
@@ -2056,7 +2056,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
 
         if self.cur_masternode:
             upd_dlg = upd_mn_service_dlg.UpdMnServiceDlg(
-                self, self.app_config, self.dashd_intf, self.cur_masternode,
+                self, self.app_config, self.polisd_intf, self.cur_masternode,
                 on_mn_config_updated_callback=on_mn_config_updated)
             upd_dlg.exec_()
         else:
@@ -2065,7 +2065,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
     def revoke_mn_operator(self):
         if self.cur_masternode:
             revoke_dlg = revoke_mn_dlg.RevokeMnDlg(
-                self, self.app_config, self.dashd_intf, self.cur_masternode)
+                self, self.app_config, self.polisd_intf, self.cur_masternode)
             revoke_dlg.exec_()
         else:
             WndUtils.errorMsg('No masternode selected')
@@ -2089,4 +2089,3 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
     @pyqtSlot()
     def on_btnRevokeMn_clicked(self):
         self.revoke_mn_operator()
-

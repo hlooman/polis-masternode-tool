@@ -18,8 +18,8 @@ from cryptography.hazmat.primitives import serialization
 
 import app_config
 import app_cache
-from app_config import AppConfig, DashNetworkConnectionCfg
-from dashd_intf import DashdInterface, control_rpc_call
+from app_config import AppConfig, PolisNetworkConnectionCfg
+from polisd_intf import PolisdInterface, control_rpc_call
 from psw_cache import SshPassCache
 from ui.ui_config_dlg import Ui_ConfigDlg
 from ui.ui_conn_rpc_wdg import Ui_RpcConnection
@@ -68,11 +68,11 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
         self.local_config = AppConfig()
         self.local_config.copy_from(app_config)
 
-        # list of connections from self.local_config.dash_net_configs split on separate lists for mainnet and testnet
+        # list of connections from self.local_config.polis_net_configs split on separate lists for mainnet and testnet
         self.connections_mainnet = []
         self.connections_testnet = []
         self.connections_current = None
-        self.current_network_cfg : Optional[DashNetworkConnectionCfg] = None
+        self.current_network_cfg : Optional[PolisNetworkConnectionCfg] = None
 
         # block ui controls -> cur config data copying while setting ui controls initial values
         self.disable_cfg_update = False
@@ -192,12 +192,12 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
             lambda: self.rpc_cfg_widget.edtRpcPassword.setEchoMode(QLineEdit.Password))
 
         if self.local_config.is_mainnet():
-            self.cboDashNetwork.setCurrentIndex(0)
+            self.cboPolisNetwork.setCurrentIndex(0)
             self.connections_current = self.connections_mainnet
         else:
-            self.cboDashNetwork.setCurrentIndex(1)
+            self.cboPolisNetwork.setCurrentIndex(1)
             self.connections_current = self.connections_testnet
-        for cfg in self.local_config.dash_net_configs:
+        for cfg in self.local_config.polis_net_configs:
             if cfg.testnet:
                 self.connections_testnet.append(cfg)
             else:
@@ -214,7 +214,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
             self.cboKeepkeyPassEncoding.setCurrentIndex(0)
         else:
             self.cboKeepkeyPassEncoding.setCurrentIndex(1)
-        note_url = get_note_url('DMTN0001')
+        note_url = get_note_url('PMTN0001')
         self.lblKeepkeyPassEncoding.setText(f'KepKey passphrase encoding (<a href="{note_url}">see</a>)')
 
         self.chbCheckForUpdates.setChecked(self.local_config.check_for_updates)
@@ -236,7 +236,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
         self.cboLogLevel.setCurrentIndex(idx)
 
         self.display_connection_list()
-        if len(self.local_config.dash_net_configs):
+        if len(self.local_config.polis_net_configs):
             self.lstConns.setCurrentRow(0)
 
         self.update_keepkey_pass_encoding_ui()
@@ -280,15 +280,15 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
         self.wdgKeepkeyPassEncoding.setVisible(self.local_config.hw_type == HWType.keepkey)
 
     @pyqtSlot(int)
-    def on_cboDashNetwork_currentIndexChanged(self, index):
+    def on_cboPolisNetwork_currentIndexChanged(self, index):
         """Executed after changing configuration between MAINNET and TESTNET."""
         if not self.disable_cfg_update:
             if index == 0:
                 self.connections_current = self.connections_mainnet
-                self.local_config.dash_network = 'MAINNET'
+                self.local_config.polis_network = 'MAINNET'
             else:
                 self.connections_current = self.connections_testnet
-                self.local_config.dash_network = 'TESTNET'
+                self.local_config.polis_network = 'TESTNET'
             self.display_connection_list()
             self.set_modified()
             self.lstConns.setCurrentRow(0)
@@ -304,7 +304,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
             conns = self.local_config.decode_connections_json(clipboard.text())
             if isinstance(conns, list) and len(conns):
                 # disable the 'paste' action if the clipboard doesn't contain a JSON string describing a
-                # dash connection(s)
+                # polis connection(s)
                 self.action_paste_connections.setEnabled(True)
             else:
                 self.action_paste_connections.setEnabled(False)
@@ -341,12 +341,12 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
 
                     # update the main list containing connections configuration from separate  lists dedicated
                     # to mainnet and testnet - it'll be used by the import_connection method
-                    self.local_config.dash_net_configs.clear()
-                    self.local_config.dash_net_configs.extend(self.connections_mainnet)
-                    self.local_config.dash_net_configs.extend(self.connections_testnet)
+                    self.local_config.polis_net_configs.clear()
+                    self.local_config.polis_net_configs.extend(self.connections_mainnet)
+                    self.local_config.polis_net_configs.extend(self.connections_testnet)
 
                     added, updated = self.local_config.import_connections(
-                        conns, force_import=True, limit_to_network=self.local_config.dash_network)
+                        conns, force_import=True, limit_to_network=self.local_config.polis_network)
                     for cfg in added:
                         cfg.enabled = True
                     self.connections_current.extend(added)
@@ -364,17 +364,17 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
         if self.queryDlg('Do you really want to restore default connection(s)?',
                          buttons=QMessageBox.Yes | QMessageBox.Cancel,
                          default_button=QMessageBox.Yes, icon=QMessageBox.Information) == QMessageBox.Yes:
-            cfgs = self.local_config.decode_connections(default_config.dashd_default_connections)
+            cfgs = self.local_config.decode_connections(default_config.polisd_default_connections)
             if cfgs:
                 # update the main list containing connections configuration from separate  lists dedicated
                 # to mainnet and testnet - it'll be used by the import_connection method
-                self.local_config.dash_net_configs.clear()
-                self.local_config.dash_net_configs.extend(self.connections_mainnet)
-                self.local_config.dash_net_configs.extend(self.connections_testnet)
+                self.local_config.polis_net_configs.clear()
+                self.local_config.polis_net_configs.extend(self.connections_mainnet)
+                self.local_config.polis_net_configs.extend(self.connections_testnet)
 
                 # force import default connections if there is no any in the configuration
                 added, updated = self.local_config.import_connections(
-                    cfgs, force_import=True, limit_to_network=self.local_config.dash_network)
+                    cfgs, force_import=True, limit_to_network=self.local_config.polis_network)
                 self.connections_current.extend(added)
                 if added or updated:
                     row_selected = self.lstConns.currentRow()
@@ -423,8 +423,8 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
 
     @pyqtSlot()
     def on_action_new_connection_triggered(self):
-        cfg = DashNetworkConnectionCfg('rpc')
-        cfg.testnet = True if self.cboDashNetwork.currentIndex() == 1 else False
+        cfg = PolisNetworkConnectionCfg('rpc')
+        cfg.testnet = True if self.cboPolisNetwork.currentIndex() == 1 else False
         self.connections_current.append(cfg)
 
         # add config to the connections list:
@@ -608,7 +608,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
 
     def on_chbRandomConn_toggled(self, checked):
         if not self.disable_cfg_update:
-            self.local_config.random_dash_net_config = checked
+            self.local_config.random_polis_net_config = checked
             self.set_modified()
 
     def update_ssh_ctrls_ui(self):
@@ -683,7 +683,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
                 self.rpc_cfg_widget.setVisible(False)
                 self.btnEncryptionPublicKey.setVisible(False)
                 self.lblEncryptionPublicKey.setVisible(False)
-            self.chbRandomConn.setChecked(self.local_config.random_dash_net_config)
+            self.chbRandomConn.setChecked(self.local_config.random_polis_net_config)
         finally:
             self.disable_cfg_update = dis_old
 
@@ -770,7 +770,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
             self.set_modified()
 
     def on_btnSshReadRpcConfig_clicked(self):
-        """Read the configuration of a remote RPC node from the node's dash.conf file."""
+        """Read the configuration of a remote RPC node from the node's polis.conf file."""
         if self.current_network_cfg:
             host = self.current_network_cfg.ssh_conn_cfg.host
             port = self.current_network_cfg.ssh_conn_cfg.port
@@ -793,19 +793,19 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
                 username, ok = QInputDialog.getText(self, 'Username Dialog', 'Enter username for SSH connection:')
             if not ok or not username:
                 return
-            from dashd_intf import DashdSSH
-            ssh = DashdSSH(host, int(port), username, auth_method=auth_method, private_key_path=private_key_path)
+            from polisd_intf import PolisdSSH
+            ssh = PolisdSSH(host, int(port), username, auth_method=auth_method, private_key_path=private_key_path)
             try:
                 if ssh.connect():
-                    dashd_conf = ssh.find_dashd_config()
+                    polisd_conf = ssh.find_polisd_config()
                     self.disable_cfg_update = True
-                    if isinstance(dashd_conf, tuple) and len(dashd_conf) >= 3:
-                        if not dashd_conf[0]:
-                            self.infoMsg('Remore Dash daemon seems to be shut down')
-                        elif not dashd_conf[1]:
-                            self.infoMsg('Could not find remote dashd.conf file')
+                    if isinstance(polisd_conf, tuple) and len(polisd_conf) >= 3:
+                        if not polisd_conf[0]:
+                            self.infoMsg('Remore Polis daemon seems to be shut down')
+                        elif not polisd_conf[1]:
+                            self.infoMsg('Could not find remote polisd.conf file')
                         else:
-                            file = dashd_conf[2]
+                            file = polisd_conf[2]
                             rpcuser = file.get('rpcuser', '')
                             rpcpassword = file.get('rpcpassword', '')
                             rpcport = file.get('rpcport', '9998')
@@ -828,18 +828,18 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
                                 self.is_modified = modified
 
                             if file.get('server', '1') == '0':
-                                self.warnMsg("Remote dash.conf parameter 'server' is set to '0', so RPC interface will "
+                                self.warnMsg("Remote polis.conf parameter 'server' is set to '0', so RPC interface will "
                                              "not work.")
                             if not rpcuser:
-                                self.warnMsg("Remote dash.conf parameter 'rpcuser' is not set, so RPC interface will  "
+                                self.warnMsg("Remote polis.conf parameter 'rpcuser' is not set, so RPC interface will  "
                                              "not work.")
                             if not rpcpassword:
-                                self.warnMsg("Remote dash.conf parameter 'rpcpassword' is not set, so RPC interface will  "
+                                self.warnMsg("Remote polis.conf parameter 'rpcpassword' is not set, so RPC interface will  "
                                              "not work.")
                         self.update_connection_details_ui()
-                    elif isinstance(dashd_conf, str):
-                        self.warnMsg("Couldn't read remote dashd configuration file due the following error: " +
-                                     dashd_conf)
+                    elif isinstance(polisd_conf, str):
+                        self.warnMsg("Couldn't read remote polisd configuration file due the following error: " +
+                                     polisd_conf)
                     ssh.disconnect()
             except Exception as e:
                 self.errorMsg(str(e))
@@ -850,14 +850,14 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
     def on_btnTestConnection_clicked(self):
         if self.current_network_cfg:
             self.local_config.db_intf = self.app_config.db_intf
-            dashd_intf = DashdInterface(window=self)
-            dashd_intf.initialize(self.local_config, connection=self.current_network_cfg,
+            polisd_intf = PolisdInterface(window=self)
+            polisd_intf.initialize(self.local_config, connection=self.current_network_cfg,
                                   for_testing_connections_only=True)
             try:
-                info = dashd_intf.getinfo(verify_node=True)
+                info = polisd_intf.getinfo(verify_node=True)
                 if info:
                     try:
-                        ret = dashd_intf.rpc_call(True, False, "checkfeaturesupport", "enhanced_proxy")
+                        ret = polisd_intf.rpc_call(True, False, "checkfeaturesupport", "enhanced_proxy")
                     except Exception as e:
                         ret = None
 
@@ -871,7 +871,7 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
             except Exception as e:
                 self.errorMsg('Connection error. Details: ' + str(e))
             finally:
-                del dashd_intf
+                del polisd_intf
 
     def set_modified(self):
         if not self.disable_cfg_update:
@@ -886,9 +886,9 @@ class ConfigDlg(QDialog, Ui_ConfigDlg, WndUtils):
         fields in the self.app_config object.
         """
         if self.is_modified:
-            self.local_config.dash_net_configs.clear()
-            self.local_config.dash_net_configs.extend(self.connections_mainnet)
-            self.local_config.dash_net_configs.extend(self.connections_testnet)
+            self.local_config.polis_net_configs.clear()
+            self.local_config.polis_net_configs.extend(self.connections_mainnet)
+            self.local_config.polis_net_configs.extend(self.connections_testnet)
 
             self.app_config.copy_from(self.local_config)
             self.app_config.conn_config_changed()

@@ -93,9 +93,9 @@ users the need to re-submit their votes.
 
 **Added**
 - DML registration wizard: the possibility of using public keys 
-for the operator and Dash addresses for the owner and voting.
+for the operator and Polis addresses for the owner and voting.
 - Main window: the possibility of displaying private keys in the form 
-of: Dash address, public key and public key hash (for diagnostics).
+of: Polis address, public key and public key hash (for diagnostics).
 - Wallet: the possibility of adding/hiding any BIP44 account (use 
 context menu). Please note, that if there is a gap between the account 
 added and the last one used (having a transaction history), the 
@@ -112,7 +112,7 @@ mode) that is currently selected in the main window.
 roles - owner, operator and voter - one can choose any combination of 
 them.
 - DML registration wizard: support for the 'feeSourceAddress' field 
-in the `protx prepare` call (added in Dash Core rc11).
+in the `protx prepare` call (added in Polis Core rc11).
 - Main window: suport for deterministic masternodes in the masternode 
 status area.
 - Main window: the visibility of the buttons associated with starting 
@@ -131,7 +131,7 @@ account discovery method.
 ## [0.9.21] - 2019-01-13
 
 **Added**
-- Support for Dash v13 - Deterministic Masternode List (protocol 70213)
+- Support for Polis v13 - Deterministic Masternode List (protocol 70213)
 
 **Changed**
 - Wallet dialog: major redesign
@@ -140,7 +140,7 @@ account discovery method.
 ## [0.9.20] - 2018-06-18
 
 **Added**
-- Dash daemon v12.3 support (protocol 70209/70210)
+- Polis daemon v12.3 support (protocol 70209/70210)
 - Default protocol version is now stored in the project GitHub repo
 
 **Fixed**
@@ -160,7 +160,7 @@ account discovery method.
 ## [0.9.18] - 2018-04-17
 
 **Added**
-- Support for Dash Testnet
+- Support for Polis Testnet
 - Support for Trezor T hardware wallet
 - Switching between different configurations
 - Config files encryption with hardware wallets
@@ -204,22 +204,22 @@ external file (can be encrypted with hardware wallet)
 **Changed**
 
 - Added a scroll area inside the `Vote` tab in the `Proposals` window to improve the visibility of proposals for users with several masternodes configured and low screen resolution.
-- Moved to the official Trezor Insight API for Dash (https://dash-bitcore1.trezor.io/api/).
+- Moved to the official Trezor Insight API for Polis (https://polis-bitcore1.trezor.io/api/).
 - Moved to the official (non-forked) KeepKey Python library after fixing KeepKey Python 3 support.
 - Masternodes in the `Vote` tab in the `Proposals` window are now sorted according to the configuration file order (not randomly).
 
 **Fixed**
 
-- The connection was incorrectly shown as successful for proxy connections when nginx was running, but the Dash daemon was not.
+- The connection was incorrectly shown as successful for proxy connections when nginx was running, but the Polis daemon was not.
 - Workaround for an issue in the Trezor Python library causing normalization of "national" characters in passphrases (NFC instead of NFKD), resulting in incorrect addresses read from the device if the passphrase contains non-ASCII characters.
 - Address inconsistency error while starting the masternode if the collateral address in the configuration contained spaces at the beginning or end of the collateral address.
 - Properly take into account the user's time zone in the `Proposals` window when displaying the voting deadline.
 
 **Backend changes**
 
-- Changed the domain for "public" nodes to something more relevant: dash-masternode-tool.org.
+- Changed the domain for "public" nodes to something more relevant: polis-masternode-tool.org.
 - Changed the TCP port number for *alice* and *luna* "public" RPC nodes to 443 - the official HTTPS port.
-- Added a new "public" RPC node: suzy.dash-masternode-tool.org:443.
+- Added a new "public" RPC node: suzy.polis-masternode-tool.org:443.
 
 **Known issues**
 

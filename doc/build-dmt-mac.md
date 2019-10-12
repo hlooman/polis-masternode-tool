@@ -1,6 +1,6 @@
-## Building the Dash Masternode Tool executable on macOS
+## Building the Polis Masternode Tool executable on macOS
 
-You can build Dash Masternode Tool for macOS by opening the Terminal app and running the following commands:
+You can build Polis Masternode Tool for macOS by opening the Terminal app and running the following commands:
 
 * Install *Homebrew*:
 
@@ -16,7 +16,7 @@ You can build Dash Masternode Tool for macOS by opening the Terminal app and run
   brew install python3
   ```
 
-* After the installation process completes, make sure that the Python version installed is 3.6 or newer. DMT won't compile on older versions of Python, or even older versions of Python 3:
+* After the installation process completes, make sure that the Python version installed is 3.6 or newer. PMT won't compile on older versions of Python, or even older versions of Python 3:
 
   ```
   python3 --version
@@ -32,41 +32,41 @@ You can build Dash Masternode Tool for macOS by opening the Terminal app and run
   pip3 install virtualenv
   ```
 
-* Create a Python virtual environment for DMT:
+* Create a Python virtual environment for PMT:
 
   ```
   cd ~
   mkdir projects
   mkdir projects/virtualenvs
   cd projects/virtualenvs
-  virtualenv -p python3 dmt
+  virtualenv -p python3 pmt
   ```
 
 * Activate the new virtual environment:
 
   ```
-  source dmt/bin/activate
+  source pmt/bin/activate
   ```
 
-* Download the DMT source from GitHub:
+* Download the PMT source from GitHub:
 
   ```
   cd ~/projects
-  git clone https://github.com/Bertrand256/dash-masternode-tool
+  git clone https://github.com/Bertrand256/polis-masternode-tool
   ```
 
-* Install the DMT Python requirements:
+* Install the PMT Python requirements:
 
   ```
-  cd dash-masternode-tool
+  cd polis-masternode-tool
   pip install -r requirements.txt
   ```
 
-* Build the DMT executable:
+* Build the PMT executable:
 
   ```
-  pyinstaller --distpath=../dist/mac --workpath=../build/mac dash_masternode_tool.spec
+  pyinstaller --distpath=../dist/mac --workpath=../build/mac polis_masternode_tool.spec
   ```
 
 
-Once the build has completed successfully, a compressed macOS executable file will be created in the ***~/projects/dist/all*** directory. An uncompressed app package (*DashMasternodeTool.app*) can be found in the ***~/projects/dist/mac*** directory.
+Once the build has completed successfully, a compressed macOS executable file will be created in the ***~/projects/dist/all*** directory. An uncompressed app package (*PolisMasternodeTool.app*) can be found in the ***~/projects/dist/mac*** directory.

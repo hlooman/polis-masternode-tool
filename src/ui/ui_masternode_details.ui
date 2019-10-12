@@ -335,7 +335,7 @@
            </size>
           </property>
           <property name="toolTip">
-           <string>Show Dash address for the entered BIP32 path</string>
+           <string>Show Polis address for the entered BIP32 path</string>
           </property>
           <property name="text">
            <string/>

@@ -34,9 +34,9 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tabDashd">
+     <widget class="QWidget" name="tabPolisd">
       <attribute name="title">
-       <string>Dash network</string>
+       <string>Polis network</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="spacing">
@@ -59,12 +59,12 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Dash network:</string>
+            <string>Polis network:</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="cboDashNetwork">
+          <widget class="QComboBox" name="cboPolisNetwork">
            <item>
             <property name="text">
              <string>MAINNET</string>
@@ -502,7 +502,7 @@
        <item>
         <widget class="QCheckBox" name="chbDownloadProposalExternalData">
          <property name="text">
-          <string>Download external proposal attributes (DashCentral.org)</string>
+          <string>Download external proposal attributes (PolisCentral.org)</string>
          </property>
         </widget>
        </item>

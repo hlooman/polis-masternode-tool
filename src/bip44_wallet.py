@@ -14,8 +14,8 @@ from PyQt5.QtCore import QObject, Qt
 import app_utils
 import hw_intf
 from common import CancelException
-from dash_utils import bip32_path_string_to_n, pubkey_to_address, bip32_path_n_to_string, bip32_path_string_append_elem
-from dashd_intf import DashdInterface
+from polis_utils import bip32_path_string_to_n, pubkey_to_address, bip32_path_n_to_string, bip32_path_string_append_elem
+from polisd_intf import PolisdInterface
 from hw_common import HwSessionInfo, HWNotConnectedException
 from db_intf import DBCache
 from thread_fun_dlg import CtrlObject
@@ -34,7 +34,7 @@ UNCONFIRMED_TX_BLOCK_HEIGHT = 99999999
 DEFAULT_TX_FETCH_PRIORITY = 1  # the higher the number to higher the priority
 ADDR_BALANCE_CONSISTENCY_CHECK_SECONDS = 3600
 
-log = logging.getLogger('dmt.bip44_wallet')
+log = logging.getLogger('pmt.bip44_wallet')
 
 
 class BreakFetchTransactionsException(Exception):
@@ -53,14 +53,14 @@ class SwitchedHDIdentityException(Exception):
 class Bip44Wallet(QObject):
     blockheight_changed = QtCore.pyqtSignal(int)
 
-    def __init__(self, coin_name: str, hw_session: HwSessionInfo, db_intf: DBCache, dashd_intf: DashdInterface,
-                 dash_network: str):
+    def __init__(self, coin_name: str, hw_session: HwSessionInfo, db_intf: DBCache, polisd_intf: PolisdInterface,
+                 polis_network: str):
         QObject.__init__(self)
         self.db = None
         self.hw_session = hw_session
-        self.dash_network = dash_network
+        self.polis_network = polis_network
         self.db_intf = db_intf
-        self.dashd_intf = dashd_intf
+        self.polisd_intf = polisd_intf
         self.cur_block_height = None
         self.last_get_block_height_ts = 0
         self.__coin_name = coin_name
@@ -204,7 +204,7 @@ class Bip44Wallet(QObject):
     def get_block_height(self):
         if self.cur_block_height is None or \
            (time.time() - self.last_get_block_height_ts >= GET_BLOCKHEIGHT_MIN_SECONDS):
-            new_bh = self.dashd_intf.getblockcount()
+            new_bh = self.polisd_intf.getblockcount()
             self.last_get_block_height_ts = time.time()
             if self.cur_block_height != new_bh:
                 self.cur_block_height = new_bh
@@ -420,7 +420,7 @@ class Bip44Wallet(QObject):
                 if not row:
                     parent_key = parent_key_entry.get_bip32key()
                     key = parent_key.ChildKey(child_addr_index)
-                    address = pubkey_to_address(key.PublicKey().hex(), self.dash_network)
+                    address = pubkey_to_address(key.PublicKey().hex(), self.polis_network)
                     if not parent_key_entry.bip32_path:
                         raise Exception('BIP32 path of the parent key not set')
                     bip32_path = bip32_path_string_append_elem(parent_key_entry.bip32_path, child_addr_index)
@@ -577,12 +577,12 @@ class Bip44Wallet(QObject):
                 account = Bip44AccountType(None, id, xpub=xpub, address_index=account_index,
                                            bip32_path=account_bip32_path)
                 account.read_from_db(db_cursor)
-                account.evaluate_address_if_null(db_cursor, self.dash_network)
+                account.evaluate_address_if_null(db_cursor, self.polis_network)
 
             else:
                 account = Bip44AccountType(self.get_tree_id(), id=None, xpub=xpub, address_index=account_index,
                                            bip32_path=account_bip32_path)
-                account.evaluate_address_if_null(db_cursor, self.dash_network)
+                account.evaluate_address_if_null(db_cursor, self.polis_network)
                 account.create_in_db(db_cursor)
                 self.db_intf.commit()
 
@@ -630,7 +630,7 @@ class Bip44Wallet(QObject):
 
                     if account.bip32_path:
                         account.xpub = hw_intf.get_xpub(self.hw_session, account.bip32_path)
-                        account.evaluate_address_if_null(db_cursor, self.dash_network)
+                        account.evaluate_address_if_null(db_cursor, self.polis_network)
 
                     self._read_account_addresses(account, db_cursor)
                     self.signal_account_added(account)
@@ -640,7 +640,7 @@ class Bip44Wallet(QObject):
 
             if not account.xpub and account.bip32_path:
                 account.xpub = hw_intf.get_xpub(self.hw_session, account.bip32_path)
-                account.evaluate_address_if_null(db_cursor, self.dash_network)
+                account.evaluate_address_if_null(db_cursor, self.polis_network)
         return account
 
     def _read_account_addresses(self, account: Bip44AccountType, db_cursor):
@@ -820,14 +820,14 @@ class Bip44Wallet(QObject):
 
             if last_block_height < max_block_height:
                 log.debug(f'getaddressdeltas for {addresses}, start: {last_block_height + 1}, end: {max_block_height}')
-                txids = self.dashd_intf.getaddressdeltas({'addresses': addresses,
+                txids = self.polisd_intf.getaddressdeltas({'addresses': addresses,
                                                          'start': last_block_height + 1,
                                                          'end': max_block_height})
             else:
                 txids = []
 
             try:
-                mempool_entries = self.dashd_intf.getaddressmempool(addresses)
+                mempool_entries = self.polisd_intf.getaddressmempool(addresses)
                 mempool_entries_verified = []
                 for me_tx in mempool_entries:
                     me_txid = me_tx.get('txid')
@@ -863,13 +863,13 @@ class Bip44Wallet(QObject):
                 if time.time() - a.last_balance_verify_ts >= ADDR_BALANCE_CONSISTENCY_CHECK_SECONDS:
                     log.debug('Verifying address balance consistency. Id: %s', a.id)
                     try:
-                        b = self.dashd_intf.getaddressbalance([a.address])
+                        b = self.polisd_intf.getaddressbalance([a.address])
                         bal = b.get('balance')
                         a.last_balance_verify_ts = int(time.time())
                         if bal is not None and bal != a.balance:
                             log.warning('Balance of address %s inconsistency. Trying to refetch transactions.',
                                         a.id)
-                            txids = self.dashd_intf.getaddressdeltas({'addresses': [a.address],
+                            txids = self.polisd_intf.getaddressdeltas({'addresses': [a.address],
                                                                       'start': 0,
                                                                       'end': max_block_height})
 
@@ -900,7 +900,7 @@ class Bip44Wallet(QObject):
         else:
             in_mempool = False
 
-        tx = self.dashd_intf.getrawtransaction(txhash, 1)
+        tx = self.polisd_intf.getrawtransaction(txhash, 1)
 
         if in_mempool and tx.get('height'):
             del self.__txs_in_mempool[txhash]
@@ -923,8 +923,8 @@ class Bip44Wallet(QObject):
 
                 block_height = tx_json.get('height')
                 if block_height:
-                    block_hash = self.dashd_intf.getblockhash(block_height)
-                    block_header = self.dashd_intf.getblockheader(block_hash)
+                    block_hash = self.polisd_intf.getblockhash(block_height)
+                    block_header = self.polisd_intf.getblockheader(block_hash)
                     block_timestamp = block_header.get('time')
                 else:
                     # if block_height equals 0, it's non confirmed transaction and block_timestamp stores
@@ -958,8 +958,8 @@ class Bip44Wallet(QObject):
 
                 block_height = tx_json.get('height', 0)
                 if block_height:
-                    block_hash = self.dashd_intf.getblockhash(block_height)
-                    block_header = self.dashd_intf.getblockheader(block_hash)
+                    block_hash = self.polisd_intf.getblockhash(block_height)
+                    block_header = self.polisd_intf.getblockheader(block_hash)
                     block_timestamp = block_header.get('time')
                     db_cursor.execute('update tx set block_height=?, block_timestamp=? where id=?',
                                       (block_height, block_timestamp, tx_id))
@@ -1156,11 +1156,11 @@ class Bip44Wallet(QObject):
 
                 change_level_node = account.get_child_entry(change)
                 change_level_node.read_from_db(db_cursor, create=True)
-                change_level_node.evaluate_address_if_null(db_cursor, self.dash_network)
+                change_level_node.evaluate_address_if_null(db_cursor, self.polis_network)
                 self._fetch_child_addrs_txs(change_level_node, account, check_break_process_fun)
             self._update_addr_balances(account)
             account.read_from_db(db_cursor)
-            account.evaluate_address_if_null(db_cursor, self.dash_network)
+            account.evaluate_address_if_null(db_cursor, self.polis_network)
             self._process_addresses_created(db_cursor)
 
         log.debug('Starting fetching transactions for all accounts.')
@@ -1229,7 +1229,7 @@ class Bip44Wallet(QObject):
                         acc = account
                 change_level_node = acc.get_child_entry(change)
                 change_level_node.read_from_db(db_cursor, create=True)
-                change_level_node.evaluate_address_if_null(db_cursor, self.dash_network)
+                change_level_node.evaluate_address_if_null(db_cursor, self.polis_network)
                 self._fetch_child_addrs_txs(change_level_node, acc, check_break_process_fun)
                 self._update_addr_balances(acc)
                 self._process_addresses_created(db_cursor)
@@ -1257,7 +1257,7 @@ class Bip44Wallet(QObject):
                     acc = account
             change_level_node = acc.get_child_entry(change)
             change_level_node.read_from_db(db_cursor, create=True)
-            change_level_node.evaluate_address_if_null(db_cursor, self.dash_network)
+            change_level_node.evaluate_address_if_null(db_cursor, self.polis_network)
 
             for addr in self._list_child_addresses(change_level_node, 0, MAX_ADDRESSES_TO_SCAN, account):
                 self._check_terminate_tx_fetch()
@@ -1734,11 +1734,11 @@ class Bip44Wallet(QObject):
 
                         change_level_node = account.get_child_entry(change)
                         change_level_node.read_from_db(db_cursor, create=True)
-                        change_level_node.evaluate_address_if_null(db_cursor, self.dash_network)
+                        change_level_node.evaluate_address_if_null(db_cursor, self.polis_network)
                         # self._fetch_child_addrs_txs(change_level_node, account, check_break_process_fun)
                     # self._update_addr_balances(account)
                     account.read_from_db(db_cursor)
-                    account.evaluate_address_if_null(db_cursor, self.dash_network)
+                    account.evaluate_address_if_null(db_cursor, self.polis_network)
                     self.set_account_status(account, 1)
                     self._process_addresses_created(db_cursor)
                 finally:
@@ -1960,7 +1960,7 @@ def get_tx_address_thread(ctrl: CtrlObject, addresses: List[str], bip44_wallet: 
     ret_addresses = []
     break_scanning = False
     txes_cnt = 0
-    msg = 'Looking for a BIP32 path of the Dash address related to the masternode collateral.<br>' \
+    msg = 'Looking for a BIP32 path of the Polis address related to the masternode collateral.<br>' \
           'This may take a while (<a href="break">break</a>)....'
     ctrl.dlg_config_fun(dlg_title="Looking for address", show_progress_bar=False)
     ctrl.display_msg_fun(msg)

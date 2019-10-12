@@ -18,7 +18,7 @@ from PyQt5.QtCore import Qt
 from wnd_utils import WndUtils
 
 
-log = logging.getLogger('dmt.app_cache')
+log = logging.getLogger('pmt.app_cache')
 
 
 class AppCache(object):

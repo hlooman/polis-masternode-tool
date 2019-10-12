@@ -183,7 +183,7 @@ class CmdConsoleDlg(QDialog, ui_cmd_console_dlg.Ui_CmdConsoleDlg):
           Arguments:
             "module-name": "all" or a name of a module; to display list of all modules, enter `display modules` command
             "log-level": debug|info|warning|error|critical
-          Example: set loglevel all:info,dmt.bip44_wallet:debug  
+          Example: set loglevel all:info,pmt.bip44_wallet:debug  
             
         <b>set logformat "format-string"</b>
           Sets the format of log messages.
@@ -294,8 +294,8 @@ class CmdConsoleDlg(QDialog, ui_cmd_console_dlg.Ui_CmdConsoleDlg):
         self.message('Log format set to: ' + format_string)
 
     def rpc_command(self, command: str, *args):
-        if self.main_dlg.dashd_intf:
-            ret = self.main_dlg.dashd_intf.rpc_call(False, True, command, *args)
+        if self.main_dlg.polisd_intf:
+            ret = self.main_dlg.polisd_intf.rpc_call(False, True, command, *args)
             try:
                 if isinstance(ret, str):
                     ret = json.loads(ret)
@@ -305,7 +305,7 @@ class CmdConsoleDlg(QDialog, ui_cmd_console_dlg.Ui_CmdConsoleDlg):
             self.message(ret, style="white-space: pre-wrap;")
             return True
         else:
-            WndUtils.errorMsg('Not connected to a Dash node')
+            WndUtils.errorMsg('Not connected to a Polis node')
             return False
 
     @pyqtSlot()

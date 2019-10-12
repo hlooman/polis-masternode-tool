@@ -9,8 +9,8 @@ from bitcoinrpc.authproxy import JSONRPCException
 import app_cache
 from app_config import MasternodeConfig, AppConfig, InputKeyType
 from app_defs import FEE_DUFF_PER_BYTE
-from dash_utils import validate_address
-from dashd_intf import DashdInterface
+from polis_utils import validate_address
+from polisd_intf import PolisdInterface
 from ui import ui_revoke_mn_dlg
 from wnd_utils import WndUtils, ProxyStyleNoFocusRect
 
@@ -22,7 +22,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
     def __init__(self,
                  main_dlg,
                  app_config: AppConfig,
-                 dashd_intf: DashdInterface,
+                 polisd_intf: PolisdInterface,
                  masternode: MasternodeConfig):
         QDialog.__init__(self, main_dlg)
         ui_revoke_mn_dlg.Ui_RevokeMnDlg.__init__(self)
@@ -30,7 +30,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
         self.main_dlg = main_dlg
         self.masternode = masternode
         self.app_config = app_config
-        self.dashd_intf = dashd_intf
+        self.polisd_intf = polisd_intf
         self.dmn_protx_hash = self.masternode.dmn_tx_hash
         self.dmn_actual_operator_pubkey = ""
         self.revocation_reason = 0
@@ -83,7 +83,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
         try:
             protx = None
             if not self.dmn_protx_hash:
-                for protx in self.dashd_intf.protx('list', 'registered', True):
+                for protx in self.polisd_intf.protx('list', 'registered', True):
                     protx_state = protx.get('state')
                     if (protx_state and protx_state.get(
                             'service') == self.masternode.ip + ':' + self.masternode.port) or \
@@ -97,7 +97,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
 
             if not protx:
                 try:
-                    protx = self.dashd_intf.protx('info', self.dmn_protx_hash)
+                    protx = self.polisd_intf.protx('info', self.dmn_protx_hash)
                 except Exception as e:
                     if str(e).find('not found') >= 0:
                         raise Exception(f'A protx transaction with this hash does not exist or is inactive: '
@@ -144,8 +144,8 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
             cmd = f'protx revoke "{self.dmn_protx_hash}" "{self.masternode.dmn_operator_private_key}" ' \
                 f'{self.revocation_reason} "<span style="color:green">feeSourceAddress</span>"'
             msg = '<ol>' \
-                  '<li>Start a Dash Core wallet with sufficient funds to cover a transaction fee.</li>'
-            msg += '<li>Execute the following command in the Dash Core debug console:<br><br>'
+                  '<li>Start a Polis Core wallet with sufficient funds to cover a transaction fee.</li>'
+            msg += '<li>Execute the following command in the Polis Core debug console:<br><br>'
             msg += '  <code style=\"background-color:#e6e6e6\">' + cmd + '</code></li><br>'
             msg += 'Replace <span style="color:green">feeSourceAddress</span> with the address being the ' \
                    'source of the transaction fee.'
@@ -177,7 +177,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
                       funding_address]
 
             try:
-                revoke_support = self.dashd_intf.checkfeaturesupport('protx_revoke',
+                revoke_support = self.polisd_intf.checkfeaturesupport('protx_revoke',
                                                                           self.app_config.app_version)
                 if not revoke_support.get('enabled'):
                     if revoke_support.get('message'):
@@ -203,7 +203,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
                 try:
                     # find an address to be used as the source of the transaction fees
                     min_fee = round(1024 * FEE_DUFF_PER_BYTE / 1e8, 8)
-                    balances = self.dashd_intf.listaddressbalances(min_fee)
+                    balances = self.polisd_intf.listaddressbalances(min_fee)
                     bal_list = []
                     for addr in balances:
                         bal_list.append({'address': addr, 'amount': balances[addr]})
@@ -217,7 +217,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
                                     "public RPC node and the funding address for the transaction fee will "
                                     "be estimated during the `update_registrar` call")
 
-            upd_tx_hash = self.dashd_intf.rpc_call(True, False, 'protx', *params)
+            upd_tx_hash = self.polisd_intf.rpc_call(True, False, 'protx', *params)
 
             if upd_tx_hash:
                 logging.info('revoke successfully executed, tx hash: ' + upd_tx_hash)

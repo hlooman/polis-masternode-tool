@@ -14,7 +14,7 @@ import app_cache
 from wnd_utils import WndUtils
 
 
-log = logging.getLogger('dmt.ext_item_model')
+log = logging.getLogger('pmt.ext_item_model')
 
 
 class TableModelColumn(AttrsProtected):

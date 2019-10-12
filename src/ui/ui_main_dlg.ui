@@ -442,7 +442,7 @@ padding-right: 0px;</string>
             <item>
              <widget class="QPushButton" name="btnUpdMnService">
               <property name="toolTip">
-               <string>Update the masternode IP:port and/or the operator reward Dash address.</string>
+               <string>Update the masternode IP:port and/or the operator reward Polis address.</string>
               </property>
               <property name="text">
                <string>Update service</string>
@@ -647,7 +647,7 @@ padding-right: 0px;</string>
     <string>Check Network Connection</string>
    </property>
    <property name="toolTip">
-    <string>Check Dash Network Connection</string>
+    <string>Check Polis Network Connection</string>
    </property>
   </action>
   <action name="action_open_settings_window">
@@ -699,7 +699,7 @@ padding-right: 0px;</string>
   </action>
   <action name="action_about_app">
    <property name="text">
-    <string>About DashMasternodeTool...</string>
+    <string>About PolisMasternodeTool...</string>
    </property>
    <property name="menuRole">
     <enum>QAction::AboutRole</enum>

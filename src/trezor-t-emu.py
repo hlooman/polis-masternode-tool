@@ -37,7 +37,7 @@ if __name__ == '__main__':
         emulator_base_dir = os.path.join(app_dir, 'hardware-wallets', 'trezor-core-emu')
         emulator_bin = os.path.join(emulator_base_dir, sys.platform, 'micropython')
 
-    profile_dir = os.path.join(os.path.expanduser('~'), '.dmt', 'trezor-core-emu')
+    profile_dir = os.path.join(os.path.expanduser('~'), '.pmt', 'trezor-core-emu')
     t = threading.Thread(target=execute_trezor_emu, args=(emulator_base_dir, profile_dir))
     t.start()
 
