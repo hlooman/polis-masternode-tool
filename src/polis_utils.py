@@ -343,7 +343,7 @@ def electrum_sig_hash(message):
     """
     Based on project: https://github.com/chaeplin/polismnb.
     """
-    padded = b"\x19DarkCoin Signed Message:\n" + \
+    padded = b"\x19Polis Signed Message:\n" + \
         num_to_varint(len(message)) + from_string_to_bytes(message)
     return bitcoin.dbl_sha256(padded)
 
