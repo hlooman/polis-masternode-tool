@@ -33,7 +33,7 @@ Python version 3.6 or above is required to build PMT. Download and install Pytho
 
 ### Install *Git*
 
-* Open your preferred web browser and go to https://git-scm.com/download/win 
+* Open your preferred web browser and go to https://git-scm.com/download/win
 
 * The download process should start automatically. If it doesn't, click the link to download the 64-bit installer:
 
@@ -111,7 +111,7 @@ Open the Windows command prompt (*cmd.exe*)  and run the following commands:
 
   ```
   cd c:\projects
-  git clone https://github.com/Bertrand256/polis-masternode-tool
+  git clone https://github.com/hlooman/polis-masternode-tool
   ```
 
 * Install the PMT Python requirements:
@@ -120,7 +120,7 @@ Open the Windows command prompt (*cmd.exe*)  and run the following commands:
   cd polis-masternode-tool
   pip install -r requirements.txt
   ```
-  
+
 * Build the PMT executable:
 
   ```
@@ -128,4 +128,4 @@ Open the Windows command prompt (*cmd.exe*)  and run the following commands:
   ```
 
 
-Once the build has completed successfully, a compressed Windows executable file will be created in the ***C:\projects\dist\all*** directory. An uncompressed executable file (*PolisMasernodeTool.exe*) can be found in the ***C:\projects\dist\win64*** directory.
+Once the build has completed successfully, a compressed Windows executable file will be created in the ***C:\projects\dist\all*** directory. An uncompressed executable file (*PolisMasternodeTool.exe*) can be found in the ***C:\projects\dist\win64*** directory.

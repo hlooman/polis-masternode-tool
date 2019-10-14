@@ -52,7 +52,7 @@ You can build Polis Masternode Tool for macOS by opening the Terminal app and ru
 
   ```
   cd ~/projects
-  git clone https://github.com/Bertrand256/polis-masternode-tool
+  git clone https://github.com/hlooman/polis-masternode-tool
   ```
 
 * Install the PMT Python requirements:

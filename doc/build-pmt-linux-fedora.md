@@ -15,7 +15,7 @@ Execute the following commands from the terminal:
 [pmt@fedora /]# virtualenv -p python3 venv
 [pmt@fedora /]# . venv/bin/activate
 [pmt@fedora /]# pip install --upgrade setuptools
-[pmt@fedora /]# git clone https://github.com/Bertrand256/polis-masternode-tool
+[pmt@fedora /]# git clone https://github.com/hlooman/polis-masternode-tool
 [pmt@fedora /]# cd polis-masternode-tool/
 [pmt@fedora /]# pip install -r requirements.txt
 [pmt@fedora /]# pyinstaller --distpath=../dist/linux --workpath=../dist/linux/build polis_masternode_tool.spec
@@ -59,7 +59,7 @@ Execute the following command:
 docker pull bertrand256/build-pmt
 ```
 
-**Build the image yourself, using the Dockerfile file from the PMT project repository.** 
+**Build the image yourself, using the Dockerfile file from the PMT project repository.**
 
 * Download the https://github.com/Bertrand256/polis-masternode-tool/blob/master/build/fedora/Dockerfile file and place it in the *working directory*
 * Execute the following command:
@@ -76,7 +76,7 @@ docker ps -a --filter name=pmtbuild --filter ancestor=bertrand256/build-pmt
 ```
 Create the container:
 
-``` 
+```
 mkdir -p build
 docker create --name pmtbuild -v $(pwd)/build:/root/pmt/dist -it bertrand256/build-pmt
 ```

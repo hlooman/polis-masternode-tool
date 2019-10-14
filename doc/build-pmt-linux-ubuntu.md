@@ -25,7 +25,7 @@ After making sure that you have the correct Python version, execute the followin
 [pmt@ubuntu /]# virtualenv -p python3.6 venv
 [pmt@ubuntu /]# . venv/bin/activate
 [pmt@ubuntu /]# pip install --upgrade setuptools
-[pmt@ubuntu /]# git clone https://github.com/Bertrand256/polis-masternode-tool
+[pmt@ubuntu /]# git clone https://github.com/hlooman/polis-masternode-tool
 [pmt@ubuntu /]# cd polis-masternode-tool/
 [pmt@ubuntu /]# pip install -r requirements.txt
 [pmt@ubuntu /]# pyinstaller --distpath=../dist/linux --workpath=../dist/linux/build polis_masternode_tool.spec
@@ -70,7 +70,7 @@ Execute the following command:
 docker pull bertrand256/build-pmt:ubuntu
 ```
 
-**Build the image yourself, using the Dockerfile file from the PMT project repository.** 
+**Build the image yourself, using the Dockerfile file from the PMT project repository.**
 
 * Download the https://github.com/Bertrand256/polis-masternode-tool/blob/master/build/ubuntu/Dockerfile file and place it in the *working directory*
 * Execute the following command:
@@ -87,7 +87,7 @@ docker ps -a --filter name=pmtbuild --filter ancestor=bertrand256/build-pmt:ubun
 ```
 Create the container:
 
-``` 
+```
 mkdir -p build
 docker create --name pmtbuild -v $(pwd)/build:/root/pmt/dist -it bertrand256/build-pmt:ubuntu
 ```
