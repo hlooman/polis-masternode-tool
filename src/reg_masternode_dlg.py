@@ -575,19 +575,19 @@ class RegMasternodeDlg(QDialog, ui_reg_masternode_dlg.Ui_RegMasternodeDlg, WndUt
         nt = self.get_polis_node_type()
         msg = ''
         if nt is None:
-            msg = 'DIP-3 masternode registration involves sending a special transaction via the v0.13 Polis node ' \
+            msg = 'DIP-3 masternode registration involves sending a special transaction via the v1.5.3 Polis node ' \
                   '(eg Polis-Qt). <b>Note, that this requires incurring a certain transaction fee, as with any ' \
                   'other ("normal") transaction.</b>'
         elif nt == NODE_TYPE_PUBLIC_RPC:
             msg = 'The ProRegTx transaction will be processed via the remote RPC node stored in the app configuration.' \
                   '<br><br>' \
                   '<b>Note 1:</b> this operation will involve signing transaction data with your <span style="color:red">owner key on the remote node</span>, ' \
-                  'so use this method only if you trust the operator of that node (nodes <i>alice(luna, suzy).polis-masternode-tool.org</i> are maintained by the author of this application).<br><br>' \
+                  'so use this method only if you trust the operator of that node (nodes <i>(seattle, frankfurt).polis.tools</i> are maintained by Hans).<br><br>' \
                   '<b>Note 2:</b> if the operation fails (e.g. due to a lack of funds), choose the manual method ' \
                   'using your own Polis wallet.'
 
         elif nt == NODE_TYPE_OWN:
-            msg = 'A Polis Core wallet (v0.13) with sufficient funds to cover transaction fees is required to ' \
+            msg = 'A Polis Core wallet (v1.5.3) with sufficient funds to cover transaction fees is required to ' \
                   'complete the next steps.'
         self.lblPolisNodeTypeMessage.setText(msg)
 
