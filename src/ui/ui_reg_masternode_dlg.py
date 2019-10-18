@@ -641,7 +641,7 @@ class Ui_RegMasternodeDlg(object):
         self.btnManualProtxSubmitCopy.setToolTip(_translate("RegMasternodeDlg", "Copy text to clipboard"))
         self.label_11.setText(_translate("RegMasternodeDlg", "<b>5. Paste the result (tx hash) below and click the &lt;Continue&gt; button:</b>"))
         self.btnManualTxHashPaste.setToolTip(_translate("RegMasternodeDlg", "Paste text from clipboard"))
-        self.lblProtxSummary1.setText(_translate("RegMasternodeDlg", "<b><span style=\"color:green\">Congratultions! The transaction for your DIP-3 masternode has been submitted.</b></span>"))
+        self.lblProtxSummary1.setText(_translate("RegMasternodeDlg", "<b><span style=\"color:green\">Congratulations! The transaction for your DIP-3 masternode has been submitted.</b></span>"))
         self.lblProtxSummary2.setText(_translate("RegMasternodeDlg", "It is highly recommended to make a secure copy of the following information (<a href=\"save\">save to a file</a>):"))
         self.lblProtxSummary3.setText(_translate("RegMasternodeDlg", "..."))
         self.btnSummaryDMNOperatorKeyCopy.setToolTip(_translate("RegMasternodeDlg", "Copy text to clipboard"))
@@ -660,4 +660,3 @@ if __name__ == "__main__":
     ui.setupUi(RegMasternodeDlg)
     RegMasternodeDlg.show()
     sys.exit(app.exec_())
-

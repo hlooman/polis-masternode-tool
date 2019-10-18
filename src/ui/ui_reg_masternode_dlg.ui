@@ -1004,7 +1004,7 @@
        <item>
         <widget class="QLabel" name="lblProtxSummary1">
          <property name="text">
-          <string>&lt;b&gt;&lt;span style=&quot;color:green&quot;&gt;Congratultions! The transaction for your DIP-3 masternode has been submitted.&lt;/b&gt;&lt;/span&gt;</string>
+          <string>&lt;b&gt;&lt;span style=&quot;color:green&quot;&gt;Congratulations! The transaction for your DIP-3 masternode has been submitted.&lt;/b&gt;&lt;/span&gt;</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
