@@ -15,7 +15,7 @@ from polis_utils import bip32_path_string_to_n, bip32_path_n_to_string, pubkey_t
 
 def xpub_to_hash(xpub: str):
     xpub_raw = Base58.check_decode(xpub)
-    if xpub_raw[0:4] in (b'\x02\xfe\x52\xcc', b'\x04\x88\xb2\x1e'):  # remove xpub prefix
+    if xpub_raw[0:4] in (b'\x03\xe2\x5d\x7e'):  # remove ppub prefix
         xpub_raw = xpub_raw[4:]
     xpub_hash = bitcoin.bin_sha256(xpub_raw)
     xpub_hash = base64.b64encode(xpub_hash)
@@ -548,5 +548,3 @@ class Bip44AccountType(AttrsProtected, Bip44Entry):
             del self.addresses[index]
             return True
         return False
-
-
