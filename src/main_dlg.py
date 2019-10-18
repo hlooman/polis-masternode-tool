@@ -1835,6 +1835,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                                 on_thread_finish=enable_buttons, on_thread_exception=on_get_status_exception)
             except Exception as e:
                 self.lblMnStatus.setText('')
+                logging.exception(str(e))
                 raise
         else:
             enable_buttons()
