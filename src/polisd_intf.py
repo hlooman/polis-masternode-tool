@@ -743,7 +743,7 @@ class PolisdInterface(WndUtils):
     def open(self):
         """
         Opens connection to polis RPC. If it fails, then the next enabled conn config will be used, if any exists.
-        :return: True if successfully connected, False if user cancelled the operation. If all of the attempts 
+        :return: True if successfully connected, False if user cancelled the operation. If all of the attempts
             fail, then appropriate exception will be raised.
         """
         try:
@@ -789,7 +789,7 @@ class PolisdInterface(WndUtils):
     def open_internal(self):
         """
         Try to establish connection to polis RPC daemon for current connection config.
-        :return: True, if connection successfully establishes, False if user Cancels the operation (not always 
+        :return: True, if connection successfully establishes, False if user Cancels the operation (not always
             cancelling will be possible - only when user is prompted for a password).
         """
         if not self.active:
@@ -939,6 +939,7 @@ class PolisdInterface(WndUtils):
                     self.http_conn.close()
                     return True
                 else:
+                    log.debug("Sync Exception")
                     raise
         else:
             raise Exception('Not connected')
@@ -1379,4 +1380,3 @@ class PolisdInterface(WndUtils):
             return False
         except Exception as e:
             return False
-
