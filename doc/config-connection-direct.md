@@ -12,7 +12,7 @@ Copy and paste the following parameters/values into the file, changing the `rpcu
 ```ini
 rpcuser=any_alphanumeric_string_as_a_username
 rpcpassword=any_alphanumeric_string_as_a_password
-rpcport=9998
+rpcport=24127
 rpcallowip=127.0.0.1
 server=1
 addressindex=1
@@ -40,7 +40,7 @@ Setting parameters related to indexing and even restarting the application is no
  * Check the `Enabled` box.
  * Enter the following values:
    * `RPC host`: 127.0.0.1
-   * `port`: 9998
+   * `port`: 24127
    * `RPC username`: enter the value you specified for the `rpcuser` parameter in the `polis.conf` file.
    * `RPC password`: enter the value you specified for the `rpcpassword` parameter in the `polis.conf` file.
  * Make sure the `Use SSH tunnel` and `SSL` checkboxes remain unchecked. Also, if you decide to use only this connection, deactivate all other connections by unchecking the corresponding `Enabled` checkboxes.  
