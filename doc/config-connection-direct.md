@@ -2,7 +2,7 @@
 In this scenario, you will use your own Polis daemon configured to serve JSON-RPC requests on your local network or any network you can access directly. The most convenient way to achieve this is to run a daemon on the same computer as the PMT application itself.
 
 ## Install the Polis Core wallet
-We will use the official Polis Core client as the Polis daemon for this configuration. Install it now if not already installed. Binary installers for macOS, Linux and Windows can be downloaded from the [official site](https://www.polis.org/wallets), while documentation on the installation process is available on the [Polis Wiki](https://docs.polis.org/en/stable/wallets/poliscore/installation.html).
+We will use the official Polis Core client as the Polis daemon for this configuration. Install it now if not already installed. Binary installers for macOS, Linux and Windows can be downloaded from the [official site](https://www.polispay.org)
 
 ## Enable JSON-RPC and "indexing" in Polis Core
 ###  Set the required parameters in the `polis.conf` file
