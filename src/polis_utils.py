@@ -334,14 +334,14 @@ def wif_privkey_to_uncompressed(wif_key: str):
 
 def from_string_to_bytes(a):
     """
-    Based on project: https://github.com/chaeplin/polismnb.
+    Based on project: https://github.com/chaeplin/dashmnb.
     """
     return a if isinstance(a, bytes) else bytes(a, 'utf-8')
 
 
 def electrum_sig_hash(message):
     """
-    Based on project: https://github.com/chaeplin/polismnb.
+    Based on project: https://github.com/chaeplin/dashmnb.
     """
     padded = b"\x19Polis Signed Message:\n" + \
         num_to_varint(len(message)) + from_string_to_bytes(message)
@@ -377,7 +377,7 @@ def ecdsa_sign_raw(msg_raw: bytes, wif_priv_key: str, polis_network: str):
 
 
 def serialize_input_str(tx, prevout_n, sequence, script_sig):
-    """Based on project: https://github.com/chaeplin/polismnb."""
+    """Based on project: https://github.com/chaeplin/dashmnb."""
     s = ['CTxIn(']
     s.append('COutPoint(%s, %s)' % (tx, prevout_n))
     s.append(', ')

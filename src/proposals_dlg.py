@@ -3259,7 +3259,7 @@ class VotesModel(QAbstractTableModel):
             tm_begin = time.time()
             cur = self.db_intf.get_cursor()
             if self.proposal:
-                log.debug('Get votes fot proposal id: ' + str(self.proposal.db_id))
+                log.debug('Get votes for proposal id: ' + str(self.proposal.db_id))
                 cur.execute("SELECT voting_time, voting_result, masternode_ident, m.ip "
                             "FROM VOTING_RESULTS v "
                             "LEFT OUTER JOIN masternodes m on m.ident = v.masternode_ident "
