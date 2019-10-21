@@ -464,13 +464,9 @@ def extract_pkh_from_locking_script(script):
 
 def convert_polis_xpub(xpub, dest_prefix: str):
     if dest_prefix != xpub[0:4]:
-        if dest_prefix == 'xpub':
+        if dest_prefix == 'ppub':
             raw = Base58.check_decode(xpub)
-            raw = bytes.fromhex('0488b21e') + raw[4:]
-            xpub = Base58.check_encode(raw)
-        elif dest_prefix == 'drkp':
-            raw = Base58.check_decode(xpub)
-            raw = bytes.fromhex('02fe52cc') + raw[4:]
+            raw = bytes.fromhex('03e25d7e') + raw[4:]
             xpub = Base58.check_encode(raw)
     return xpub
 
