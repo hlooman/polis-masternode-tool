@@ -494,7 +494,7 @@ class UpdMnRegistrarDlg(QDialog, ui_upd_mn_registrar_dlg.Ui_UpdMnRegistrarDlg, W
                 msg = 'The update_registrar transaction has been successfully sent. ' \
                      f'Tx hash: {upd_tx_hash}. <br><br>' \
                      f'The new values ​​will be visible on the network after the transaction is confirmed, i.e. in ' \
-                     f'about 2.5 minutes.'
+                     f'about 2 minutes.'
 
                 if changed:
                     msg += '<br><br>The app configuration has been updated accordingly.'

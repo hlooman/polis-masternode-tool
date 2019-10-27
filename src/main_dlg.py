@@ -1486,7 +1486,7 @@ class MainWindow(QMainWindow, WndUtils, ui_main_dlg.Ui_MainWindow):
                 mn_ip_port = mn_info.ip
                 if mn_info.queue_position is not None:
                     next_payment_block = block_height + mn_info.queue_position + 1
-                    next_payout_ts = int(time.time()) + (mn_info.queue_position * 2.5 * 60)
+                    next_payout_ts = int(time.time()) + (mn_info.queue_position * 2 * 60)
             else:
                 if dmn_tx_state:
                     mn_ident = str(dmn_tx.get('collateralHash')) + '-' + str(dmn_tx.get('collateralIndex'))

@@ -294,7 +294,7 @@ class UpdMnServiceDlg(QDialog, ui_upd_mn_service_dlg.Ui_UpdMnServiceDlg, WndUtil
                 msg = 'The update_service transaction has been successfully sent. ' \
                      f'Tx hash: {upd_tx_hash}. <br><br>' \
                      f'The new values ​​will be visible on the network after the transaction is confirmed, i.e. in ' \
-                     f'about 2.5 minutes.'
+                     f'about 2 minutes.'
 
                 if bool(dmn_new_ip_port) and self.dmn_prev_ip_port != dmn_new_ip_port:
                     msg += '\n\nYou have changed the masternode IP/port. Do you want to automatically update ' \

@@ -234,7 +234,7 @@ class RevokeMnDlg(QDialog, ui_revoke_mn_dlg.Ui_RevokeMnDlg, WndUtils):
                 msg = 'The revoke transaction has been successfully sent. ' \
                      f'Tx hash: {upd_tx_hash}. <br><br>' \
                      f'The new values ​​will be visible on the network after the transaction is confirmed, i.e. in ' \
-                     f'about 2.5 minutes.'
+                     f'about 2 minutes.'
 
                 WndUtils.infoMsg(msg)
 
