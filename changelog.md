@@ -1,3 +1,7 @@
+## [0.9.27] - 2019-12-11
+**Fixed**
+- Fixed voting from tool functionality
+
 ## [0.9.26-hotfix2] - 2019-09-09
 
 **Fixed**
@@ -11,10 +15,10 @@
 ## [0.9.26] - 2019-08-19
 **Added**
 - Commandline parameters for changing the sig_time random offset range.
-- Ability to explicitly specify the authentication methods for an SSH tunnel from: username/password, RSA private key 
+- Ability to explicitly specify the authentication methods for an SSH tunnel from: username/password, RSA private key
 pair and ssh agent.
 - Workaround for Trezor connection issues (LIBUSB) after Windows update #1903.
-- Showing a message if duplicate masternode information in the configuration may prevent voting. 
+- Showing a message if duplicate masternode information in the configuration may prevent voting.
 
 **Fixed**
 - Issue "'WalletDlg' object has no attribute 'config'" when signing message from the wallet dialog.
@@ -27,7 +31,7 @@ pair and ssh agent.
 ## [0.9.25-hotfix1] - 2019-07-12
 
 **Fixed**
-- Issue with calculating the next payment block when a masternode received PoSeBan in the past and its PoSeRevivedBlock 
+- Issue with calculating the next payment block when a masternode received PoSeBan in the past and its PoSeRevivedBlock
 is less than the last payment block.
 
 ## [0.9.25] - 2019-07-01
@@ -64,14 +68,14 @@ is less than the last payment block.
 
 **Fixed**
 - Fix of the "invalid operator public key" error occurring in the
-"Update operator key" window when using the public key option (Kudos to 
+"Update operator key" window when using the public key option (Kudos to
 @Thiagokroger from Node40 for precise hints).
 
 ## [0.9.23-hotfix1] - 2019-05-02
 
 **Fixed**
 - Issue with "Locate collateral" feature (an empty error message).
-- Switching the active RPC connection to another after encountering "Unknown error" and "401 Unauthorized" 
+- Switching the active RPC connection to another after encountering "Unknown error" and "401 Unauthorized"
 errors.
 
 ## [0.9.23] - 2019-04-27
@@ -84,47 +88,47 @@ the estimated date of the next payment.
 
 **Changed**
 - Removed the pre-spork 15 code.
-- Fixes in the proposals dialog: support for v0.14-beta, issues with number of payment cycles. 
-- Clearing the pre-spork 15 voting results from the app cache to suggest 
+- Fixes in the proposals dialog: support for v0.14-beta, issues with number of payment cycles.
+- Clearing the pre-spork 15 voting results from the app cache to suggest
 users the need to re-submit their votes.
 - Fixed some stability issues in the wallet dialog.
 
 ## [0.9.22] - 2019-02-24
 
 **Added**
-- DML registration wizard: the possibility of using public keys 
+- DML registration wizard: the possibility of using public keys
 for the operator and Polis addresses for the owner and voting.
-- Main window: the possibility of displaying private keys in the form 
+- Main window: the possibility of displaying private keys in the form
 of: Polis address, public key and public key hash (for diagnostics).
-- Wallet: the possibility of adding/hiding any BIP44 account (use 
-context menu). Please note, that if there is a gap between the account 
-added and the last one used (having a transaction history), the 
-official client app for a given hardware wallet (eg Trezor online 
+- Wallet: the possibility of adding/hiding any BIP44 account (use
+context menu). Please note, that if there is a gap between the account
+added and the last one used (having a transaction history), the
+official client app for a given hardware wallet (eg Trezor online
 wallet) will not show it.
 - Wallet: the possibility o hiding accounts.
 - Wallet: signing messages with any address.
 - Wallet: showing incoming and not yet confirmed UTXOs (from mempool).
-- Wallet: initially select the masternode address ("Masternode address" 
+- Wallet: initially select the masternode address ("Masternode address"
 mode) that is currently selected in the main window.
 
 **Changed**
-- Main window: the user's role is morphed into three independent 
-roles - owner, operator and voter - one can choose any combination of 
+- Main window: the user's role is morphed into three independent
+roles - owner, operator and voter - one can choose any combination of
 them.
-- DML registration wizard: support for the 'feeSourceAddress' field 
+- DML registration wizard: support for the 'feeSourceAddress' field
 in the `protx prepare` call (added in Polis Core rc11).
-- Main window: suport for deterministic masternodes in the masternode 
+- Main window: suport for deterministic masternodes in the masternode
 status area.
-- Main window: the visibility of the buttons associated with starting 
+- Main window: the visibility of the buttons associated with starting
 masternodes depends on the status of DIP3 and Spork 15.
-- Wallet: improved refreshing of the UTXO list as a result of reading 
+- Wallet: improved refreshing of the UTXO list as a result of reading
 new transactions.
 
 **Fixed**
-- Proposals: fixed an issue that caused some proposals to not be 
-displayed. 
-- Wallet: issues with fetching transactions and showing UTXOs for 
-BIP44 accounts that are beyond the scope of the standard BIP44 
+- Proposals: fixed an issue that caused some proposals to not be
+displayed.
+- Wallet: issues with fetching transactions and showing UTXOs for
+BIP44 accounts that are beyond the scope of the standard BIP44
 account discovery method.
 - Fixed several other minor issues.
 

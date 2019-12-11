@@ -40,7 +40,7 @@ class ChainParams(object):
 class ChainParamsMainNet(ChainParams):
     B58_PREFIXES_PUBKEY_ADDRESS = ['P']
     B58_PREFIXES_SCRIPT_ADDRESS = ['P']
-    B58_PREFIXES_SECRET_KEY = ['3', '3']
+    B58_PREFIXES_SECRET_KEY = ['3', '9']
     PREFIX_PUBKEY_ADDRESS = 55
     PREFIX_SCRIPT_ADDRESS = 56
     PREFIX_SECRET_KEY = 60
@@ -343,7 +343,7 @@ def electrum_sig_hash(message):
     """
     Based on project: https://github.com/chaeplin/dashmnb.
     """
-    padded = b"\x19Polis Signed Message:\n" + \
+    padded = b"\x16Polis Signed Message:\n" + \
         num_to_varint(len(message)) + from_string_to_bytes(message)
     return bitcoin.dbl_sha256(padded)
 

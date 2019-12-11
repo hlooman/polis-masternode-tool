@@ -1,9 +1,9 @@
 {
-  "appCurrentVersion": "0.9.26-polis",
+  "appCurrentVersion": "0.9.27-polis",
   "exeDownloads": {
-    "mac": "https://github.com/hlooman/polis-masternode-tool/releases/download/v0.9.26/PolisMasternodeTool_0.9.26-polis.mac.dmg",
-    "win64": "https://github.com/hlooman/polis-masternode-tool/releases/download/v0.9.26/PolisMasternodeTool_0.9.26-polis.win64.zip",
-    "linux": "https://github.com/hlooman/polis-masternode-tool/releases/download/v0.9.26/PolisMasternodeTool_0.9.26-polis.linux.tar.gz"
+    "mac": "https://github.com/hlooman/polis-masternode-tool/releases/download/v0.9.27/PolisMasternodeTool_0.9.27-polis.mac.dmg",
+    "win64": "https://github.com/hlooman/polis-masternode-tool/releases/download/v0.9.27/PolisMasternodeTool_0.9.27-polis.win64.zip",
+    "linux": "https://github.com/hlooman/polis-masternode-tool/releases/download/v0.9.27/PolisMasternodeTool_0.9.27-polis.linux.tar.gz"
   },
   "defaultPolisdProtocol": {
     "mainnet": 70219,
