@@ -26,8 +26,8 @@ from wnd_utils import WndUtils
 
 TX_QUERY_ADDR_CHUNK_SIZE = 10
 ADDRESS_SCAN_GAP_LIMIT = 20
-MAX_ADDRESSES_TO_SCAN = 1000
-MAX_BIP44_ACCOUNTS = 200
+MAX_ADDRESSES_TO_SCAN = 1500
+MAX_BIP44_ACCOUNTS = 250
 GET_BLOCKHEIGHT_MIN_SECONDS = 30
 UNCONFIRMED_TX_PURGE_SECONDS = 3600
 UNCONFIRMED_TX_BLOCK_HEIGHT = 99999999
@@ -1415,7 +1415,7 @@ class Bip44Wallet(QObject):
                 "       aa.received,"
                 "       (select ifnull(sum(a.received),0) from address ca join address a "
                 "           on a.parent_id=ca.id where ca.parent_id=aa.id) real_received "
-                "from address aa where aa.id in (select id from temp_ids)) " 
+                "from address aa where aa.id in (select id from temp_ids)) "
                 "where balance<>real_balance or received<>real_received")
 
             for balance, real_balance, received, real_received, acc_id, acc_tree_id in db_cursor.fetchall():
@@ -1595,7 +1595,7 @@ class Bip44Wallet(QObject):
         sql_text = """
             select -1 type,
                    group_concat(DISTINCT a.id) src_addr_ids,
-                   (select group_concat(DISTINCT ifnull(o.address_id,'')||':'||o.address||':'||output_index||':'||o.satoshis) 
+                   (select group_concat(DISTINCT ifnull(o.address_id,'')||':'||o.address||':'||output_index||':'||o.satoshis)
                     from tx_output o where o.tx_id=t.id) rcp_addresses,
                    sum(i.satoshis),
                    t.id,
@@ -1617,7 +1617,7 @@ class Bip44Wallet(QObject):
                    t.block_height,
                    t.block_timestamp, max(i.coinbase) is_coinbase,
                    o.id
-            from tx_output o join tx t on t.id=o.tx_id join address a on a.id=o.address_id 
+            from tx_output o join tx t on t.id=o.tx_id join address a on a.id=o.address_id
             join tx_input i on i.tx_id=t.id """ + \
             condition + \
             """ group by o.id
@@ -2003,5 +2003,3 @@ def get_tx_address_thread(ctrl: CtrlObject, addresses: List[str], bip44_wallet: 
 def find_wallet_addresses(address: Union[str, List[str]], bip44_wallet: Bip44Wallet) -> List[Optional[Bip44AddressType]]:
     ret = WndUtils.run_thread_dialog(get_tx_address_thread, (address, bip44_wallet), True)
     return ret
-
-
